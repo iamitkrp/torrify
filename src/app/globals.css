@@ -198,6 +198,33 @@
     background-color: var(--backdrop-bg);
   }
   
+  /* Hide scrollbar for mobile horizontal scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Mobile touch improvements */
+  @media (max-width: 1023px) {
+    .touch-action-manipulation {
+      touch-action: manipulation;
+    }
+    
+    /* Larger touch targets on mobile */
+    button {
+      min-height: 44px;
+    }
+    
+    /* Better tap highlights */
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+  }
+  
   /* Animation utilities */
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
