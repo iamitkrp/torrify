@@ -4,6 +4,7 @@ import { YTSScraper } from './YTSScraper';
 import { NyaaScraper } from './NyaaScraper';
 import { LeetxScraper } from './LeetxScraper';
 import { RarbgScraper } from './RarbgScraper';
+import { RarbgHttpScraper } from './RarbgHttpScraper';
 import { TestScraper } from './TestScraper';
 import { SCRAPER_CONFIGS, getEnabledScrapers } from './config';
 
@@ -14,8 +15,12 @@ export { YTSScraper } from './YTSScraper';
 export { NyaaScraper } from './NyaaScraper';
 export { LeetxScraper } from './LeetxScraper';
 export { RarbgScraper } from './RarbgScraper';
+export { RarbgHttpScraper } from './RarbgHttpScraper';
 export { TestScraper } from './TestScraper';
 export { SCRAPER_CONFIGS, getEnabledScrapers } from './config';
+
+// Check if we're in a serverless environment (Vercel)
+const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY;
 
 /**
  * Scraper factory to create instances
@@ -36,7 +41,8 @@ export function createScraperInstance(scraperName: string): BaseScraperClass | n
     case 'leetx':
       return new LeetxScraper(config);
     case 'rarbg':
-      return new RarbgScraper(config);
+      // Use HTTP-based scraper for serverless environments (Vercel), Playwright version for local
+      return isServerless ? new RarbgHttpScraper(config) : new RarbgScraper(config);
     case 'test':
       return new TestScraper(config);
     default:
@@ -111,5 +117,6 @@ export async function cleanupAllScrapers(): Promise<void> {
     if (scraper instanceof RarbgScraper) {
       await scraper.cleanup();
     }
+    // RarbgHttpScraper doesn't need cleanup as it doesn't use browser automation
   }
 }

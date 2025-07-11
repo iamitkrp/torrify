@@ -46,13 +46,14 @@ export const SCRAPER_CONFIGS: Record<string, ScraperConfig> = {
   rarbg: {
     name: 'RARBG',
     baseUrl: 'https://rargb.to', // Updated to working mirror
-    timeout: DEFAULT_TIMEOUT * 2, // Increase timeout for Playwright
+    timeout: DEFAULT_TIMEOUT, // Reduce timeout for serverless compatibility
     userAgent: DEFAULT_USER_AGENT,
     enabled: true,
-    usePlaywright: true, // Enable Playwright to handle JavaScript and anti-bot protection
-    rateLimit: DEFAULT_RATE_LIMIT * 2, // Higher rate limit for mirror stability
+    usePlaywright: process.env.VERCEL ? false : true, // Disable Playwright on Vercel, enable locally
+    rateLimit: DEFAULT_RATE_LIMIT, // Standard rate limit for HTTP requests
     // Note: RARBG officially shut down in May 2023. Available mirrors may be unreliable,
     // blocked, or potentially unsafe. Enable at your own discretion.
+    // On Vercel, uses HTTP-based scraper instead of Playwright for compatibility.
   },
   test: {
     name: 'Test Scraper',
