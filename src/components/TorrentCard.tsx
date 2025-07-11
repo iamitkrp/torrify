@@ -19,10 +19,9 @@ export default function TorrentCard({ torrent, onMagnetClick }: TorrentCardProps
       try {
         await navigator.clipboard.writeText(torrent.magnetLink);
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+        setTimeout(() => setCopied(false), 2000);
       } catch (err) {
         console.error('Failed to copy magnet link:', err);
-        // Fallback for older browsers
         try {
           const textArea = document.createElement('textarea');
           textArea.value = torrent.magnetLink;
@@ -53,87 +52,163 @@ export default function TorrentCard({ torrent, onMagnetClick }: TorrentCardProps
   };
 
   const getCategoryColor = (category?: string) => {
-    if (!category) return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+    if (!category) return { bg: 'var(--surface-subtle)', text: 'var(--text-secondary)' };
     
-    const colors: Record<string, string> = {
-      movies: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
-      tv: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-      anime: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300',
-      music: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-      games: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-      software: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
-      books: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300',
+    const colors: Record<string, { bg: string; text: string }> = {
+      movies: { bg: '#fef2f2', text: '#dc2626' },
+      tv: { bg: '#eff6ff', text: '#2563eb' },
+      anime: { bg: '#fdf4ff', text: '#c026d3' },
+      music: { bg: '#f3e8ff', text: '#9333ea' },
+      games: { bg: '#f0fdf4', text: '#16a34a' },
+      software: { bg: '#fff7ed', text: '#ea580c' },
+      books: { bg: '#fefce8', text: '#ca8a04' },
     };
     
     return colors[category.toLowerCase()] || colors.movies;
   };
 
-  const getSourceBadgeColor = (source: string) => {
+  const getSourceColor = (source: string) => {
     const colors: Record<string, string> = {
-      'The Pirate Bay': 'bg-red-500',
-      '1337x': 'bg-orange-500',
-      'YTS': 'bg-green-500',
-      'Nyaa': 'bg-blue-500',
+      'The Pirate Bay': '#e74c3c',
+      '1337x': '#f39c12',
+      'YTS': '#27ae60',
+      'Nyaa': '#3498db',
     };
     
-    return colors[source] || 'bg-slate-500';
+    return colors[source] || '#6b7280';
   };
 
+  const getHealthInfo = (seeds: number) => {
+    if (seeds > 10) return { label: 'Excellent', color: 'var(--success)', width: 100 };
+    if (seeds > 5) return { label: 'Good', color: '#10b981', width: 75 };
+    if (seeds > 0) return { label: 'Fair', color: 'var(--warning)', width: 50 };
+    return { label: 'Poor', color: 'var(--error)', width: 25 };
+  };
+
+  const quality = torrent.title.match(/\b(480p|720p|1080p|2160p|4K)\b/i)?.[0] || null;
+  const categoryColors = getCategoryColor(torrent.category);
+  const sourceColor = getSourceColor(torrent.source);
+  const healthInfo = getHealthInfo(torrent.seeds);
+
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 hover:shadow-lg transition-shadow">
+    <div 
+      className="group rounded-xl border transition-all duration-200 hover:shadow-lg p-5"
+      style={{
+        backgroundColor: 'var(--surface)',
+        borderColor: 'var(--border)',
+      }}
+    >
       {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-medium text-slate-900 dark:text-white leading-5 line-clamp-2 mb-2">
-            {torrent.title}
-          </h3>
+      <div className="mb-4">
+        <h3 className="font-heading text-base font-medium leading-snug mb-3 line-clamp-2" style={{ color: 'var(--text-primary)' }}>
+          {torrent.title}
+        </h3>
+        
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Source Badge */}
+          <span 
+            className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-white"
+            style={{ backgroundColor: sourceColor }}
+          >
+            {torrent.source}
+          </span>
           
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Source Badge */}
-            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white ${getSourceBadgeColor(torrent.source)}`}>
-              {torrent.source}
+          {/* Category Badge */}
+          {torrent.category && (
+            <span 
+              className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+              style={{ 
+                backgroundColor: categoryColors.bg, 
+                color: categoryColors.text 
+              }}
+            >
+              {torrent.category}
             </span>
-            
-            {/* Category Badge */}
-            {torrent.category && (
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(torrent.category)}`}>
-                {torrent.category}
-              </span>
-            )}
-            
-            {/* Verified Badge */}
-            {torrent.verified && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
-                <Shield className="w-3 h-3 mr-1" />
-                Verified
-              </span>
-            )}
+          )}
+          
+          {/* Quality Badge */}
+          {quality && (
+            <span 
+              className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+              style={{ 
+                backgroundColor: 'var(--accent-subtle)', 
+                color: 'var(--accent)' 
+              }}
+            >
+              {quality}
+            </span>
+          )}
+          
+          {/* Verified Badge */}
+          {torrent.verified && (
+            <span 
+              className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+              style={{ 
+                backgroundColor: '#f0fdf4', 
+                color: '#16a34a' 
+              }}
+            >
+              <Shield className="w-3 h-3 mr-1" />
+              Verified
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Upload className="w-4 h-4" style={{ color: 'var(--success)' }} />
+            <span className="text-sm font-suisse" style={{ color: 'var(--text-secondary)' }}>
+              <span className="font-medium" style={{ color: 'var(--success)' }}>{torrent.seeds}</span> seeds
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Download className="w-4 h-4" style={{ color: 'var(--error)' }} />
+            <span className="text-sm font-suisse" style={{ color: 'var(--text-secondary)' }}>
+              <span className="font-medium" style={{ color: 'var(--error)' }}>{torrent.leechers}</span> leechers
+            </span>
+          </div>
+        </div>
+        
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4" style={{ color: 'var(--text-subtle)' }} />
+            <span className="text-sm font-medium font-suisse" style={{ color: 'var(--text-primary)' }}>
+              {torrent.size}
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4" style={{ color: 'var(--text-subtle)' }} />
+            <span className="text-sm font-suisse" style={{ color: 'var(--text-secondary)' }}>
+              {formatDate(torrent.uploadDate)}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
-        <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
-          <Upload className="w-3 h-3 text-green-500" />
-          <span className="font-medium text-green-600 dark:text-green-400">{torrent.seeds}</span>
-          <span>seeds</span>
+      {/* Health Indicator */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between text-xs mb-2">
+          <span className="font-medium font-suisse" style={{ color: 'var(--text-secondary)' }}>Health</span>
+          <span className="font-medium font-suisse" style={{ color: healthInfo.color }}>
+            {healthInfo.label}
+          </span>
         </div>
-        
-        <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
-          <Download className="w-3 h-3 text-red-500" />
-          <span className="font-medium text-red-600 dark:text-red-400">{torrent.leechers}</span>
-          <span>leechers</span>
-        </div>
-        
-        <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
-          <Users className="w-3 h-3" />
-          <span>{torrent.size}</span>
-        </div>
-        
-        <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
-          <Calendar className="w-3 h-3" />
-          <span>{formatDate(torrent.uploadDate)}</span>
+        <div 
+          className="w-full h-1.5 rounded-full"
+          style={{ backgroundColor: 'var(--surface-subtle)' }}
+        >
+          <div 
+            className="h-1.5 rounded-full transition-all duration-300"
+            style={{ 
+              backgroundColor: healthInfo.color,
+              width: `${healthInfo.width}%` 
+            }}
+          />
         </div>
       </div>
 
@@ -143,30 +218,39 @@ export default function TorrentCard({ torrent, onMagnetClick }: TorrentCardProps
         {torrent.magnetLink ? (
           <button
             onClick={handleMagnetClick}
-            className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-md transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm transition-all duration-200 hover:shadow-md"
+            style={{
+              backgroundColor: 'var(--accent)',
+              color: 'white'
+            }}
           >
             <Download className="w-4 h-4" />
-            Magnet
+            Download
           </button>
         ) : (
           <button
             disabled
-            className="flex-1 flex items-center justify-center gap-2 bg-slate-300 dark:bg-slate-600 text-slate-500 dark:text-slate-400 text-sm font-medium py-2 px-3 rounded-md cursor-not-allowed"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm cursor-not-allowed"
+            style={{
+              backgroundColor: 'var(--surface-subtle)',
+              color: 'var(--text-subtle)'
+            }}
           >
             <Download className="w-4 h-4" />
             No Magnet
           </button>
         )}
 
-        {/* Copy Torrent Button */}
+        {/* Copy Button */}
         {torrent.magnetLink ? (
           <button
             onClick={handleCopyClick}
-            className={`flex-1 flex items-center justify-center gap-2 text-sm font-medium py-2 px-3 rounded-md transition-colors ${
-              copied 
-                ? 'bg-green-600 text-white' 
-                : 'bg-slate-600 hover:bg-slate-700 text-white'
-            }`}
+            className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm transition-all duration-200 border"
+            style={{
+              backgroundColor: copied ? 'var(--success)' : 'var(--surface)',
+              borderColor: copied ? 'var(--success)' : 'var(--border)',
+              color: copied ? 'white' : 'var(--text-primary)'
+            }}
           >
             {copied ? (
               <>
@@ -183,7 +267,12 @@ export default function TorrentCard({ torrent, onMagnetClick }: TorrentCardProps
         ) : (
           <button
             disabled
-            className="flex-1 flex items-center justify-center gap-2 bg-slate-300 dark:bg-slate-600 text-slate-500 dark:text-slate-400 text-sm font-medium py-2 px-3 rounded-md cursor-not-allowed"
+            className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm cursor-not-allowed border"
+            style={{
+              backgroundColor: 'var(--surface-subtle)',
+              borderColor: 'var(--border)',
+              color: 'var(--text-subtle)'
+            }}
           >
             <Copy className="w-4 h-4" />
             Copy
@@ -194,51 +283,16 @@ export default function TorrentCard({ torrent, onMagnetClick }: TorrentCardProps
         {torrent.link && (
           <button
             onClick={() => window.open(torrent.link, '_blank', 'noopener,noreferrer')}
-            className="flex items-center justify-center w-9 h-9 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            className="flex items-center justify-center w-10 h-10 rounded-xl border transition-all duration-200 hover:shadow-sm"
+            style={{
+              backgroundColor: 'var(--surface)',
+              borderColor: 'var(--border)',
+              color: 'var(--text-secondary)'
+            }}
           >
             <ExternalLink className="w-4 h-4" />
           </button>
         )}
-      </div>
-
-      {/* Quality indicator for video content */}
-      {(torrent.category === 'movies' || torrent.category === 'tv' || torrent.category === 'anime') && (
-        <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span>Quality:</span>
-            <span className="font-medium">
-              {torrent.title.match(/\b(480p|720p|1080p|2160p|4K)\b/i)?.[0] || 'Unknown'}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Torrent health indicator */}
-      <div className="mt-2">
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
-          <span>Health:</span>
-          <span className={`font-medium ${
-            torrent.seeds > 10 ? 'text-green-600 dark:text-green-400' :
-            torrent.seeds > 0 ? 'text-yellow-600 dark:text-yellow-400' :
-            'text-red-600 dark:text-red-400'
-          }`}>
-            {torrent.seeds > 10 ? 'Excellent' :
-             torrent.seeds > 0 ? 'Good' : 'Poor'}
-          </span>
-        </div>
-        
-        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1">
-          <div 
-            className={`h-1 rounded-full transition-all ${
-              torrent.seeds > 10 ? 'bg-green-500' :
-              torrent.seeds > 0 ? 'bg-yellow-500' :
-              'bg-red-500'
-            }`}
-            style={{ 
-              width: `${Math.min(100, Math.max(10, (torrent.seeds / 50) * 100))}%` 
-            }}
-          />
-        </div>
       </div>
     </div>
   );

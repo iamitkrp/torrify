@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { SearchResponse, TorrentResult, FilterOptions } from '@/types';
 import { sortTorrents, filterTorrents, groupTorrentsBySource } from '@/lib/utils';
@@ -8,7 +8,7 @@ import SearchBar from '@/components/SearchBar';
 import TorrentCard from '@/components/TorrentCard';
 import FilterPanel from '@/components/FilterPanel';
 import LoadingSkeletons from '@/components/LoadingSkeletons';
-import { ArrowLeft, Filter, Download, Clock, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Filter, Download, Clock, AlertCircle, Search } from 'lucide-react';
 
 function SearchResults() {
   const searchParams = useSearchParams();
@@ -19,6 +19,10 @@ function SearchResults() {
   const [showFilters, setShowFilters] = useState(false);
   const [filteredResults, setFilteredResults] = useState<TorrentResult[]>([]);
   const [selectedSource, setSelectedSource] = useState<string>('all');
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const lastScrollY = useRef(0);
+  const isScrolling = useRef(false);
+  const scrollTimeout = useRef<NodeJS.Timeout>();
   
   const query = searchParams.get('q') || '';
   const [filters, setFilters] = useState<FilterOptions>({
@@ -29,7 +33,55 @@ function SearchResults() {
     sortOrder: 'desc',
   });
 
-  // Perform search
+  // Improved scroll detection for header visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const scrollDifference = Math.abs(currentScrollY - lastScrollY.current);
+      
+      // Only react to significant scroll movements (at least 5px)
+      if (scrollDifference < 5) return;
+      
+      // Always show header at the very top
+      if (currentScrollY <= 50) {
+        setHeaderVisible(true);
+        lastScrollY.current = currentScrollY;
+        return;
+      }
+      
+      // Only hide/show after scrolling at least 150px and with significant movement
+      if (currentScrollY > 150 && scrollDifference > 10) {
+        if (currentScrollY > lastScrollY.current + 15) {
+          // Scrolling down - hide header
+          setHeaderVisible(false);
+        } else if (currentScrollY < lastScrollY.current - 15) {
+          // Scrolling up - show header
+          setHeaderVisible(true);
+        }
+      }
+      
+      lastScrollY.current = currentScrollY;
+    };
+
+    const debouncedHandleScroll = () => {
+      if (!isScrolling.current) {
+        isScrolling.current = true;
+        requestAnimationFrame(() => {
+          handleScroll();
+          isScrolling.current = false;
+        });
+      }
+    };
+
+    window.addEventListener('scroll', debouncedHandleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', debouncedHandleScroll);
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
+      }
+    };
+  }, []);
+
   const performSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) return;
 
@@ -51,7 +103,6 @@ function SearchResults() {
       const data = await response.json();
       setSearchData(data);
       
-      // Update URL without triggering navigation
       const newUrl = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
       window.history.replaceState({}, '', newUrl);
       
@@ -63,7 +114,6 @@ function SearchResults() {
     }
   };
 
-  // Filter and sort results
   useEffect(() => {
     if (!searchData?.results) {
       setFilteredResults([]);
@@ -72,68 +122,76 @@ function SearchResults() {
 
     let results = [...searchData.results];
     
-    // Apply source filter
     if (selectedSource !== 'all') {
       results = results.filter(torrent => torrent.source === selectedSource);
     }
     
-    // Apply other filters
     results = filterTorrents(results, filters);
-    
-    // Apply sorting
     results = sortTorrents(results, filters.sortBy, filters.sortOrder);
     
     setFilteredResults(results);
   }, [searchData, filters, selectedSource]);
 
-  // Initial search on component mount
   useEffect(() => {
     if (query) {
       performSearch(query);
     }
   }, [query]);
 
-  // Get available sources for filter
   const availableSources = searchData?.sources?.map(s => s.source) || [];
-
-  // Group results by source
   const groupedResults = groupTorrentsBySource(filteredResults);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Header */}
-      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+      <header 
+        className={`fixed top-0 left-0 right-0 z-50 border-b transition-transform duration-500 ease-out header-backdrop ${
+          headerVisible ? 'translate-y-0' : '-translate-y-full'
+        }`}
+        style={{ 
+          borderColor: 'var(--border)'
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center gap-4 mb-4">
             <button
               onClick={() => router.push('/')}
-              className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-xl transition-all duration-200 hover:shadow-sm"
+              style={{
+                backgroundColor: 'var(--surface-subtle)',
+                color: 'var(--text-secondary)'
+              }}
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4" />
             </button>
-            <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
-              Torrify
-            </h1>
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <Search className="h-3 w-3 text-white" />
+              </div>
+              <span className="font-heading text-lg font-medium" style={{ color: 'var(--text-primary)' }}>
+                Torrify
+              </span>
+            </div>
           </div>
           
           <SearchBar
             onSearch={performSearch}
             loading={loading}
             defaultValue={query}
-            placeholder="Search torrents..."
+            placeholder="Search for anything..."
           />
           
-          {/* Source Tabs */}
+          {/* Source Tabs & Results Summary */}
           {searchData && !loading && (
-            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="mt-6 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
               <div className="flex flex-wrap gap-2 mb-4">
                 <button
                   onClick={() => setSelectedSource('all')}
-                  className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                    selectedSource === 'all'
-                      ? 'bg-red-500 text-white rounded-md'
-                      : 'text-slate-700 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400'
-                  }`}
+                  className="px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200"
+                  style={{
+                    backgroundColor: selectedSource === 'all' ? 'var(--accent)' : 'var(--surface-subtle)',
+                    color: selectedSource === 'all' ? 'white' : 'var(--text-primary)'
+                  }}
                 >
                   All Sources
                 </button>
@@ -143,11 +201,11 @@ function SearchResults() {
                     <button
                       key={source}
                       onClick={() => setSelectedSource(source)}
-                      className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                        selectedSource === source
-                          ? 'bg-red-500 text-white rounded-md'
-                          : 'text-slate-700 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400'
-                      }`}
+                      className="px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200"
+                      style={{
+                        backgroundColor: selectedSource === source ? 'var(--accent)' : 'var(--surface-subtle)',
+                        color: selectedSource === source ? 'white' : 'var(--text-primary)'
+                      }}
                     >
                       {source} ({sourceResultCount})
                     </button>
@@ -155,145 +213,166 @@ function SearchResults() {
                 })}
               </div>
               
-              {/* Results Summary */}
               <div className="flex items-center justify-between">
-                <div className="text-sm text-slate-600 dark:text-slate-400">
+                <div className="flex items-center gap-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   {searchData.cached && (
-                    <span className="inline-flex items-center gap-1 mr-3">
+                    <span className="inline-flex items-center gap-2">
                       <Clock className="h-4 w-4" />
                       Cached
                     </span>
                   )}
                   <span>
-                    {filteredResults.length} results found in {searchData.executionTime}ms
+                    <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+                      {filteredResults.length}
+                    </span> results in {searchData.executionTime}ms
                     {selectedSource !== 'all' && (
-                      <span className="ml-2 text-red-500 font-medium">
+                      <span className="ml-2 font-medium" style={{ color: 'var(--accent)' }}>
                         from {selectedSource}
                       </span>
                     )}
                   </span>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors ${
-                      showFilters
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    }`}
-                  >
-                    <Filter className="h-4 w-4" />
-                    Filters
-                  </button>
-                </div>
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200"
+                  style={{
+                    backgroundColor: showFilters ? 'var(--accent-subtle)' : 'var(--surface-subtle)',
+                    color: showFilters ? 'var(--accent)' : 'var(--text-primary)'
+                  }}
+                >
+                  <Filter className="h-4 w-4" />
+                  Filters
+                </button>
               </div>
             </div>
           )}
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Loading State */}
-        {loading && <LoadingSkeletons />}
+      {/* Content with proper top spacing */}
+      <div className="pt-64">
+        {/* Main Content */}
+        <main className="max-w-6xl mx-auto px-6 py-8">
+          {/* Loading State */}
+          {loading && <LoadingSkeletons />}
 
-        {/* Error State */}
-        {error && (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-                Search Failed
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400 mb-4">
-                {error}
-              </p>
-              <button
-                onClick={() => performSearch(query)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Try Again
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* No Results */}
-        {!loading && !error && filteredResults.length === 0 && searchData && (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <Download className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-                No Results Found
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400">
-                Try adjusting your search terms or filters
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Results */}
-        {!loading && !error && filteredResults.length > 0 && (
-          <div className={`${showFilters ? 'lg:grid lg:grid-cols-4 lg:gap-6' : ''}`}>
-            {/* Filters Sidebar */}
-            {showFilters && (
-              <div className="lg:col-span-1 mb-6 lg:mb-0">
-                <FilterPanel
-                  filters={filters}
-                  onFiltersChange={setFilters}
-                  availableSources={availableSources}
-                />
+          {/* Error State */}
+          {error && (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center max-w-md">
+                <div 
+                  className="w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--surface-subtle)' }}
+                >
+                  <AlertCircle className="h-8 w-8" style={{ color: 'var(--error)' }} />
+                </div>
+                <h3 className="font-heading text-xl font-medium mb-3" style={{ color: 'var(--text-primary)' }}>
+                  Search Failed
+                </h3>
+                <p className="text-sm mb-6 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                  {error}
+                </p>
+                <button
+                  onClick={() => performSearch(query)}
+                  className="px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 hover:shadow-md"
+                  style={{
+                    backgroundColor: 'var(--accent)',
+                    color: 'white'
+                  }}
+                >
+                  Try Again
+                </button>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Results Grid */}
-            <div className={showFilters ? 'lg:col-span-3' : ''}>
-              {selectedSource === 'all' ? (
-                /* Results grouped by Source */
-                Object.entries(groupedResults).map(([source, results]) => (
-                  <div key={source} className="mb-8">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-lg font-medium text-slate-900 dark:text-white">
-                        {source}
-                      </h2>
-                      <span className="text-sm text-slate-500 dark:text-slate-400">
-                        {results.length} results
-                      </span>
-                    </div>
-                    
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                      {results.map((torrent, index) => (
-                        <TorrentCard
-                          key={`${source}-${index}`}
-                          torrent={torrent}
-                          onMagnetClick={(magnetLink: string) => {
-                            window.open(magnetLink, '_blank');
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                /* Results from single source */
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {filteredResults.map((torrent, index) => (
-                    <TorrentCard
-                      key={`${selectedSource}-${index}`}
-                      torrent={torrent}
-                      onMagnetClick={(magnetLink: string) => {
-                        window.open(magnetLink, '_blank');
-                      }}
+          {/* No Results */}
+          {!loading && !error && filteredResults.length === 0 && searchData && (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center max-w-md">
+                <div 
+                  className="w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--surface-subtle)' }}
+                >
+                  <Download className="h-8 w-8" style={{ color: 'var(--text-subtle)' }} />
+                </div>
+                <h3 className="font-heading text-xl font-medium mb-3" style={{ color: 'var(--text-primary)' }}>
+                  No Results Found
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                  Try adjusting your search terms or filters
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Results */}
+          {!loading && !error && filteredResults.length > 0 && (
+            <div className={`${showFilters ? 'lg:grid lg:grid-cols-4 lg:gap-8' : ''}`}>
+              {/* Filters Sidebar */}
+              {showFilters && (
+                <div className="lg:col-span-1 mb-8 lg:mb-0">
+                  <div className="sticky top-72">
+                    <FilterPanel
+                      filters={filters}
+                      onFiltersChange={setFilters}
+                      availableSources={availableSources}
                     />
-                  ))}
+                  </div>
                 </div>
               )}
+
+              {/* Results Grid */}
+              <div className={showFilters ? 'lg:col-span-3' : ''}>
+                {selectedSource === 'all' ? (
+                  /* Results grouped by Source */
+                  Object.entries(groupedResults).map(([source, results]) => (
+                    <div key={source} className="mb-10">
+                      <div className="flex items-center justify-between mb-6">
+                        <h2 className="font-heading text-xl font-medium" style={{ color: 'var(--text-primary)' }}>
+                          {source}
+                        </h2>
+                        <span className="text-sm font-medium px-3 py-1 rounded-full" style={{ 
+                          backgroundColor: 'var(--surface-subtle)', 
+                          color: 'var(--text-secondary)' 
+                        }}>
+                          {results.length} results
+                        </span>
+                      </div>
+                      
+                      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                        {results.map((torrent, index) => (
+                          <TorrentCard
+                            key={`${source}-${index}`}
+                            torrent={torrent}
+                            onMagnetClick={(magnetLink: string) => {
+                              window.open(magnetLink, '_blank');
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  /* Results from single source */
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {filteredResults.map((torrent, index) => (
+                      <TorrentCard
+                        key={`${selectedSource}-${index}`}
+                        torrent={torrent}
+                        onMagnetClick={(magnetLink: string) => {
+                          window.open(magnetLink, '_blank');
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
-      </main>
+          )}
+        </main>
+      </div>
     </div>
   );
 }

@@ -43,6 +43,17 @@ export const SCRAPER_CONFIGS: Record<string, ScraperConfig> = {
     usePlaywright: true, // Enable Playwright to handle JavaScript redirects
     rateLimit: DEFAULT_RATE_LIMIT * 1.5, // Slower rate for Playwright
   },
+  rarbg: {
+    name: 'RARBG',
+    baseUrl: 'https://rargb.to', // Updated to working mirror
+    timeout: DEFAULT_TIMEOUT * 2, // Increase timeout for Playwright
+    userAgent: DEFAULT_USER_AGENT,
+    enabled: true,
+    usePlaywright: true, // Enable Playwright to handle JavaScript and anti-bot protection
+    rateLimit: DEFAULT_RATE_LIMIT * 2, // Higher rate limit for mirror stability
+    // Note: RARBG officially shut down in May 2023. Available mirrors may be unreliable,
+    // blocked, or potentially unsafe. Enable at your own discretion.
+  },
   test: {
     name: 'Test Scraper',
     baseUrl: 'https://example.com',

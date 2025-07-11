@@ -67,14 +67,21 @@ export default function FilterPanel({ filters, onFiltersChange, availableSources
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 space-y-6">
+    <div 
+      className="rounded-xl border p-5 space-y-6"
+      style={{
+        backgroundColor: 'var(--surface)',
+        borderColor: 'var(--border)'
+      }}
+    >
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-slate-900 dark:text-white">
+        <h3 className="font-heading text-lg font-medium" style={{ color: 'var(--text-primary)' }}>
           Filters
         </h3>
         <button
           onClick={resetFilters}
-          className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+          className="text-sm font-medium transition-colors duration-200"
+          style={{ color: 'var(--accent)' }}
         >
           Reset
         </button>
@@ -82,24 +89,37 @@ export default function FilterPanel({ filters, onFiltersChange, availableSources
 
       {/* Sort Options */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+        <label className="block text-sm font-medium mb-4" style={{ color: 'var(--text-primary)' }}>
           Sort By
         </label>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {sortOptions.map((option) => (
             <label
               key={option.value}
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex items-center gap-3 cursor-pointer group"
             >
-              <input
-                type="radio"
-                name="sortBy"
-                value={option.value}
-                checked={filters.sortBy === option.value}
-                onChange={() => handleSortChange(option.value)}
-                className="w-4 h-4 text-blue-600 border-slate-300 dark:border-slate-600 focus:ring-blue-500 dark:bg-slate-700"
-              />
-              <span className="text-sm text-slate-700 dark:text-slate-300">
+              <div className="relative">
+                <input
+                  type="radio"
+                  name="sortBy"
+                  value={option.value}
+                  checked={filters.sortBy === option.value}
+                  onChange={() => handleSortChange(option.value)}
+                  className="w-4 h-4 opacity-0 absolute"
+                />
+                <div 
+                  className="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-200"
+                  style={{
+                    borderColor: filters.sortBy === option.value ? 'var(--accent)' : 'var(--border)',
+                    backgroundColor: filters.sortBy === option.value ? 'var(--accent)' : 'transparent'
+                  }}
+                >
+                  {filters.sortBy === option.value && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                  )}
+                </div>
+              </div>
+              <span className="text-sm font-suisse" style={{ color: 'var(--text-primary)' }}>
                 {option.label}
               </span>
             </label>
@@ -109,7 +129,8 @@ export default function FilterPanel({ filters, onFiltersChange, availableSources
         {/* Sort Order Toggle */}
         <button
           onClick={handleSortOrderToggle}
-          className="mt-3 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+          className="mt-4 flex items-center gap-2 text-sm font-medium transition-colors duration-200"
+          style={{ color: 'var(--text-secondary)' }}
         >
           <ArrowUpDown className="w-4 h-4" />
           {filters.sortOrder === 'desc' ? 'Descending' : 'Ascending'}
@@ -118,7 +139,7 @@ export default function FilterPanel({ filters, onFiltersChange, availableSources
 
       {/* Minimum Seeds */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+        <label className="block text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>
           Minimum Seeds
         </label>
         <input
@@ -126,7 +147,14 @@ export default function FilterPanel({ filters, onFiltersChange, availableSources
           min="0"
           value={filters.minSeeds}
           onChange={(e) => handleMinSeedsChange(e.target.value)}
-          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-4 py-3 rounded-xl border text-sm font-suisse transition-all duration-200 focus:outline-none focus:ring-2"
+          style={{
+            backgroundColor: 'var(--surface-subtle)',
+            borderColor: 'var(--border)',
+            color: 'var(--text-primary)',
+            '--ring-color': 'var(--accent)',
+            '--ring-opacity': '0.2'
+          }}
           placeholder="0"
         />
       </div>
@@ -136,31 +164,43 @@ export default function FilterPanel({ filters, onFiltersChange, availableSources
         <div>
           <button
             onClick={() => setShowSources(!showSources)}
-            className="flex items-center justify-between w-full text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+            className="flex items-center justify-between w-full text-sm font-medium mb-3 transition-colors duration-200"
+            style={{ color: 'var(--text-primary)' }}
           >
             Sources
-            <ChevronDown className={`w-4 h-4 transition-transform ${showSources ? 'rotate-180' : ''}`} />
+            <ChevronDown 
+              className={`w-4 h-4 transition-transform duration-200 ${showSources ? 'rotate-180' : ''}`}
+              style={{ color: 'var(--text-subtle)' }}
+            />
           </button>
           
           {showSources && (
-            <div className="space-y-2 max-h-40 overflow-y-auto">
+            <div className="space-y-3 max-h-40 overflow-y-auto">
               {availableSources.map((source) => (
                 <label
                   key={source}
-                  className="flex items-center gap-2 cursor-pointer"
+                  className="flex items-center gap-3 cursor-pointer group"
                 >
                   <div className="relative">
                     <input
                       type="checkbox"
                       checked={filters.sources.includes(source)}
                       onChange={() => handleSourceToggle(source)}
-                      className="w-4 h-4 text-blue-600 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500 dark:bg-slate-700"
+                      className="w-4 h-4 opacity-0 absolute"
                     />
-                    {filters.sources.includes(source) && (
-                      <Check className="w-3 h-3 text-white absolute top-0.5 left-0.5 pointer-events-none" />
-                    )}
+                    <div 
+                      className="w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200"
+                      style={{
+                        borderColor: filters.sources.includes(source) ? 'var(--accent)' : 'var(--border)',
+                        backgroundColor: filters.sources.includes(source) ? 'var(--accent)' : 'transparent'
+                      }}
+                    >
+                      {filters.sources.includes(source) && (
+                        <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+                      )}
+                    </div>
                   </div>
-                  <span className="text-sm text-slate-700 dark:text-slate-300">
+                  <span className="text-sm font-suisse" style={{ color: 'var(--text-primary)' }}>
                     {source}
                   </span>
                 </label>
@@ -174,31 +214,43 @@ export default function FilterPanel({ filters, onFiltersChange, availableSources
       <div>
         <button
           onClick={() => setShowCategories(!showCategories)}
-          className="flex items-center justify-between w-full text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+          className="flex items-center justify-between w-full text-sm font-medium mb-3 transition-colors duration-200"
+          style={{ color: 'var(--text-primary)' }}
         >
           Categories
-          <ChevronDown className={`w-4 h-4 transition-transform ${showCategories ? 'rotate-180' : ''}`} />
+          <ChevronDown 
+            className={`w-4 h-4 transition-transform duration-200 ${showCategories ? 'rotate-180' : ''}`}
+            style={{ color: 'var(--text-subtle)' }}
+          />
         </button>
         
         {showCategories && (
-          <div className="space-y-2 max-h-40 overflow-y-auto">
+          <div className="space-y-3 max-h-40 overflow-y-auto">
             {categories.map((category) => (
               <label
                 key={category.value}
-                className="flex items-center gap-2 cursor-pointer"
+                className="flex items-center gap-3 cursor-pointer group"
               >
                 <div className="relative">
                   <input
                     type="checkbox"
                     checked={filters.categories.includes(category.value)}
                     onChange={() => handleCategoryToggle(category.value)}
-                    className="w-4 h-4 text-blue-600 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500 dark:bg-slate-700"
+                    className="w-4 h-4 opacity-0 absolute"
                   />
-                  {filters.categories.includes(category.value) && (
-                    <Check className="w-3 h-3 text-white absolute top-0.5 left-0.5 pointer-events-none" />
-                  )}
+                  <div 
+                    className="w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200"
+                    style={{
+                      borderColor: filters.categories.includes(category.value) ? 'var(--accent)' : 'var(--border)',
+                      backgroundColor: filters.categories.includes(category.value) ? 'var(--accent)' : 'transparent'
+                    }}
+                  >
+                    {filters.categories.includes(category.value) && (
+                      <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+                    )}
+                  </div>
                 </div>
-                <span className="text-sm text-slate-700 dark:text-slate-300">
+                <span className="text-sm font-suisse" style={{ color: 'var(--text-primary)' }}>
                   {category.label}
                 </span>
               </label>
@@ -209,11 +261,11 @@ export default function FilterPanel({ filters, onFiltersChange, availableSources
 
       {/* Active Filters Summary */}
       {(filters.sources.length > 0 || filters.categories.length > 0 || filters.minSeeds > 0) && (
-        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-          <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-            Active Filters:
+        <div className="pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+          <h4 className="text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>
+            Active Filters
           </h4>
-          <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
+          <div className="space-y-2 text-xs font-suisse" style={{ color: 'var(--text-secondary)' }}>
             {filters.sources.length > 0 && (
               <div>Sources: {filters.sources.length} selected</div>
             )}

@@ -3,6 +3,7 @@ import { PirateBayScraper } from './PirateBayScraper';
 import { YTSScraper } from './YTSScraper';
 import { NyaaScraper } from './NyaaScraper';
 import { LeetxScraper } from './LeetxScraper';
+import { RarbgScraper } from './RarbgScraper';
 import { TestScraper } from './TestScraper';
 import { SCRAPER_CONFIGS, getEnabledScrapers } from './config';
 
@@ -12,6 +13,7 @@ export { PirateBayScraper } from './PirateBayScraper';
 export { YTSScraper } from './YTSScraper';
 export { NyaaScraper } from './NyaaScraper';
 export { LeetxScraper } from './LeetxScraper';
+export { RarbgScraper } from './RarbgScraper';
 export { TestScraper } from './TestScraper';
 export { SCRAPER_CONFIGS, getEnabledScrapers } from './config';
 
@@ -33,6 +35,8 @@ export function createScraperInstance(scraperName: string): BaseScraperClass | n
       return new NyaaScraper(config);
     case 'leetx':
       return new LeetxScraper(config);
+    case 'rarbg':
+      return new RarbgScraper(config);
     case 'test':
       return new TestScraper(config);
     default:
@@ -74,17 +78,17 @@ export function getScrapersByCategory(category: string): BaseScraperClass[] {
     case 'movies':
     case 'tv':
       return allScrapers.filter(s => 
-        s.name === 'YTS' || s.name === 'The Pirate Bay' || s.name === '1337x' || s.name === 'Test Scraper'
+        s.name === 'YTS' || s.name === 'The Pirate Bay' || s.name === '1337x' || s.name === 'RARBG' || s.name === 'Test Scraper'
       );
     case 'anime':
       return allScrapers.filter(s => 
-        s.name === 'Nyaa' || s.name === 'The Pirate Bay' || s.name === '1337x' || s.name === 'Test Scraper'
+        s.name === 'Nyaa' || s.name === 'The Pirate Bay' || s.name === '1337x' || s.name === 'RARBG' || s.name === 'Test Scraper'
       );
     case 'music':
     case 'games':
     case 'software':
       return allScrapers.filter(s => 
-        s.name === 'The Pirate Bay' || s.name === '1337x' || s.name === 'Test Scraper'
+        s.name === 'The Pirate Bay' || s.name === '1337x' || s.name === 'RARBG' || s.name === 'Test Scraper'
       );
     default:
       return allScrapers;
@@ -102,6 +106,9 @@ export async function cleanupAllScrapers(): Promise<void> {
       await scraper.cleanup();
     }
     if (scraper instanceof NyaaScraper) {
+      await scraper.cleanup();
+    }
+    if (scraper instanceof RarbgScraper) {
       await scraper.cleanup();
     }
   }

@@ -7,7 +7,7 @@ A modern, fast, and user-friendly torrent meta-search engine built with **Next.j
 ## ✨ Features
 
 ### 🎯 Core Functionality
-- **Multi-Source Search**: Aggregates results from The Pirate Bay, 1337x, YTS, and Nyaa
+- **Multi-Source Search**: Aggregates results from The Pirate Bay, 1337x, YTS, Nyaa, and RARBG
 - **Real-time Search**: Instant results with concurrent scraping
 - **Smart Caching**: 15-minute LRU cache for lightning-fast repeat searches
 - **Advanced Filtering**: Filter by source, category, minimum seeds, and more
@@ -101,6 +101,7 @@ torrify/
 │   │   ├── LeetxScraper.ts    # 1337x (Playwright)
 │   │   ├── YTSScraper.ts      # YTS Movies
 │   │   ├── NyaaScraper.ts     # Nyaa Anime
+│   │   ├── RarbgScraper.ts    # RARBG Torrents
 │   │   ├── config.ts          # Scraper configurations
 │   │   └── index.ts           # Scraper factory
 │   └── types/                  # TypeScript definitions
