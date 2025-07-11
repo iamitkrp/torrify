@@ -52,7 +52,7 @@ export class PirateBayScraper extends BaseScraperClass {
         '.torrentrow'
       ];
 
-      let $resultRows = $();
+      let $resultRows = $('');
       for (const selector of possibleSelectors) {
         $resultRows = $(selector);
         if ($resultRows.length > 0) {

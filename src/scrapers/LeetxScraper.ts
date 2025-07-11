@@ -41,7 +41,7 @@ export class LeetxScraper extends BaseScraperClass {
       // Wait for search results to load - be more flexible with selectors
       try {
         await page.waitForSelector('table.table-list tbody tr, .no-results, .search-results', { timeout: 8000 });
-      } catch (error) {
+      } catch {
         // If specific selectors fail, just wait a bit for general content
         await page.waitForTimeout(2000);
       }

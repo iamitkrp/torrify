@@ -80,7 +80,7 @@ export class NyaaScraper extends BaseScraperClass {
         'tr'
       ];
 
-      let $resultRows = $();
+      let $resultRows = $('');
       for (const selector of possibleSelectors) {
         $resultRows = $(selector);
         if ($resultRows.length > 1) { // Need more than just header row
@@ -90,7 +90,7 @@ export class NyaaScraper extends BaseScraperClass {
       }
 
       if ($resultRows.length <= 1) {
-        console.log('[Nyaa] No results found. Page HTML snippet:', response.data.substring(0, 1000));
+        console.log('[Nyaa] No results found. Page HTML snippet:', content.substring(0, 1000));
         return [];
       }
 

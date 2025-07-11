@@ -230,7 +230,7 @@ async function executeScrapersWithConcurrency(
 /**
  * Cleanup function for Playwright instances
  */
-export async function cleanup() {
+async function cleanup() {
   try {
     await cleanupAllScrapers();
   } catch (error) {
