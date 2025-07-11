@@ -401,6 +401,8 @@ function DesktopSearchResults() {
 
   // Desktop scroll detection for header visibility
   useEffect(() => {
+    const currentTimeout = scrollTimeout.current;
+    
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       const scrollDifference = Math.abs(currentScrollY - lastScrollY.current);
@@ -437,7 +439,6 @@ function DesktopSearchResults() {
     window.addEventListener('scroll', debouncedHandleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', debouncedHandleScroll);
-      const currentTimeout = scrollTimeout.current;
       if (currentTimeout) {
         clearTimeout(currentTimeout);
       }

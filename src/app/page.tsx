@@ -82,14 +82,11 @@ export default function Home() {
               <button
                 key={category.name}
                 onClick={() => handleSearch(category.query)}
-                className="group flex items-center space-x-3 p-4 rounded-xl border transition-all duration-200 hover:shadow-sm"
+                className="group flex items-center space-x-3 p-4 rounded-xl border transition-all duration-200 hover:shadow-sm hover:bg-[var(--surface-subtle)]"
                 style={{ 
                   backgroundColor: 'var(--surface)',
-                  borderColor: 'var(--border)',
-                  '--hover-bg': 'var(--surface-subtle)'
+                  borderColor: 'var(--border)'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-subtle)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--surface)'}
               >
                 <span className="text-lg">{category.emoji}</span>
                 <span className="font-medium text-sm flex-1 text-left" style={{ color: 'var(--text-primary)' }}>
