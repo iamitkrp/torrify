@@ -78,7 +78,7 @@ export default function Home() {
             Popular Categories
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-lg mx-auto">
-            {categories.map((category, index) => (
+            {categories.map((category) => (
               <button
                 key={category.name}
                 onClick={() => handleSearch(category.query)}

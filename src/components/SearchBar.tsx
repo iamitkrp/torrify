@@ -132,7 +132,7 @@ export default function SearchBar({
             <ul className="text-sm space-y-2" style={{ color: 'var(--text-secondary)' }}>
               <li className="flex items-start space-x-2">
                 <span className="text-xs font-mono mt-0.5" style={{ color: 'var(--text-subtle)' }}>•</span>
-                <span>Use specific terms like <span className="font-mono text-xs px-1 py-0.5 rounded" style={{ backgroundColor: 'var(--surface-subtle)' }}>"Dune 2021 1080p"</span></span>
+                <span>Use specific terms like <span className="font-mono text-xs px-1 py-0.5 rounded" style={{ backgroundColor: 'var(--surface-subtle)' }}>&ldquo;Dune 2021 1080p&rdquo;</span></span>
               </li>
               <li className="flex items-start space-x-2">
                 <span className="text-xs font-mono mt-0.5" style={{ color: 'var(--text-subtle)' }}>•</span>

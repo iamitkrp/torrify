@@ -8,7 +8,7 @@ import SearchBar from '@/components/SearchBar';
 import TorrentCard from '@/components/TorrentCard';
 import FilterPanel from '@/components/FilterPanel';
 import LoadingSkeletons from '@/components/LoadingSkeletons';
-import { ArrowLeft, Filter, Download, Clock, AlertCircle, Search, Menu, Grid, List, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, Filter, Download, Clock, AlertCircle, Search, Grid, List, SlidersHorizontal } from 'lucide-react';
 
 // Mobile-First Search Component
 function MobileSearchResults() {
@@ -21,7 +21,6 @@ function MobileSearchResults() {
   const [filteredResults, setFilteredResults] = useState<TorrentResult[]>([]);
   const [selectedSource, setSelectedSource] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [searchFocused, setSearchFocused] = useState(false);
   
   const query = searchParams.get('q') || '';
   const [filters, setFilters] = useState<FilterOptions>({
@@ -438,8 +437,9 @@ function DesktopSearchResults() {
     window.addEventListener('scroll', debouncedHandleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', debouncedHandleScroll);
-      if (scrollTimeout.current) {
-        clearTimeout(scrollTimeout.current);
+      const currentTimeout = scrollTimeout.current;
+      if (currentTimeout) {
+        clearTimeout(currentTimeout);
       }
     };
   }, []);
