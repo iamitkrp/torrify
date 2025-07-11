@@ -40,8 +40,9 @@ export const SCRAPER_CONFIGS: Record<string, ScraperConfig> = {
     timeout: DEFAULT_TIMEOUT,
     userAgent: DEFAULT_USER_AGENT,
     enabled: true,
-    usePlaywright: true, // Enable Playwright to handle JavaScript redirects
-    rateLimit: DEFAULT_RATE_LIMIT * 1.5, // Slower rate for Playwright
+    usePlaywright: process.env.VERCEL ? false : true, // Disable Playwright on Vercel, enable locally
+    rateLimit: DEFAULT_RATE_LIMIT, // Standard rate limit for HTTP requests
+    // On Vercel, uses HTTP-based scraper instead of Playwright for compatibility.
   },
   rarbg: {
     name: 'RARBG',

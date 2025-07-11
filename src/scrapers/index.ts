@@ -2,6 +2,7 @@ import { BaseScraperClass } from './BaseScraper';
 import { PirateBayScraper } from './PirateBayScraper';
 import { YTSScraper } from './YTSScraper';
 import { NyaaScraper } from './NyaaScraper';
+import { NyaaHttpScraper } from './NyaaHttpScraper';
 import { LeetxScraper } from './LeetxScraper';
 import { RarbgScraper } from './RarbgScraper';
 import { RarbgHttpScraper } from './RarbgHttpScraper';
@@ -13,6 +14,7 @@ export { BaseScraperClass } from './BaseScraper';
 export { PirateBayScraper } from './PirateBayScraper';
 export { YTSScraper } from './YTSScraper';
 export { NyaaScraper } from './NyaaScraper';
+export { NyaaHttpScraper } from './NyaaHttpScraper';
 export { LeetxScraper } from './LeetxScraper';
 export { RarbgScraper } from './RarbgScraper';
 export { RarbgHttpScraper } from './RarbgHttpScraper';
@@ -37,7 +39,8 @@ export function createScraperInstance(scraperName: string): BaseScraperClass | n
     case 'yts':
       return new YTSScraper(config);
     case 'nyaa':
-      return new NyaaScraper(config);
+      // Use HTTP-based scraper for serverless environments (Vercel), Playwright version for local
+      return isServerless ? new NyaaHttpScraper(config) : new NyaaScraper(config);
     case 'leetx':
       return new LeetxScraper(config);
     case 'rarbg':
@@ -114,6 +117,7 @@ export async function cleanupAllScrapers(): Promise<void> {
     if (scraper instanceof NyaaScraper) {
       await scraper.cleanup();
     }
+    // NyaaHttpScraper doesn't need cleanup as it doesn't use browser automation
     if (scraper instanceof RarbgScraper) {
       await scraper.cleanup();
     }

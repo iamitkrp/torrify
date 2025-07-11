@@ -7,8 +7,8 @@
   },
   "env": {
     "VERCEL": "1",
-    "SCRAPING_TIMEOUT": "25000",
-    "MAX_CONCURRENT_REQUESTS": "3"
+    "SCRAPING_TIMEOUT": "20000",
+    "MAX_CONCURRENT_REQUESTS": "4"
   },
   "headers": [
     {
