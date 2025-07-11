@@ -5,7 +5,7 @@ import { sortTorrents, cleanSearchQuery, calculateSearchStats } from '@/lib/util
 import { getCachedResults, setCachedResults } from '@/lib/cache';
 
 const MAX_CONCURRENT_SCRAPERS = parseInt(process.env.MAX_CONCURRENT_REQUESTS || '4');
-const SEARCH_TIMEOUT = parseInt(process.env.SCRAPING_TIMEOUT || '10000');
+const SEARCH_TIMEOUT = parseInt(process.env.SCRAPING_TIMEOUT || '15000');
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();

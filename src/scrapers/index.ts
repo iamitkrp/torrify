@@ -3,6 +3,7 @@ import { PirateBayScraper } from './PirateBayScraper';
 import { YTSScraper } from './YTSScraper';
 import { NyaaScraper } from './NyaaScraper';
 import { LeetxScraper } from './LeetxScraper';
+import { TestScraper } from './TestScraper';
 import { SCRAPER_CONFIGS, getEnabledScrapers } from './config';
 
 // Export all scrapers
@@ -11,6 +12,7 @@ export { PirateBayScraper } from './PirateBayScraper';
 export { YTSScraper } from './YTSScraper';
 export { NyaaScraper } from './NyaaScraper';
 export { LeetxScraper } from './LeetxScraper';
+export { TestScraper } from './TestScraper';
 export { SCRAPER_CONFIGS, getEnabledScrapers } from './config';
 
 /**
@@ -31,6 +33,8 @@ export function createScraperInstance(scraperName: string): BaseScraperClass | n
       return new NyaaScraper(config);
     case 'leetx':
       return new LeetxScraper(config);
+    case 'test':
+      return new TestScraper(config);
     default:
       return null;
   }
@@ -70,17 +74,17 @@ export function getScrapersByCategory(category: string): BaseScraperClass[] {
     case 'movies':
     case 'tv':
       return allScrapers.filter(s => 
-        s.name === 'YTS' || s.name === 'The Pirate Bay' || s.name === '1337x'
+        s.name === 'YTS' || s.name === 'The Pirate Bay' || s.name === '1337x' || s.name === 'Test Scraper'
       );
     case 'anime':
       return allScrapers.filter(s => 
-        s.name === 'Nyaa' || s.name === 'The Pirate Bay' || s.name === '1337x'
+        s.name === 'Nyaa' || s.name === 'The Pirate Bay' || s.name === '1337x' || s.name === 'Test Scraper'
       );
     case 'music':
     case 'games':
     case 'software':
       return allScrapers.filter(s => 
-        s.name === 'The Pirate Bay' || s.name === '1337x'
+        s.name === 'The Pirate Bay' || s.name === '1337x' || s.name === 'Test Scraper'
       );
     default:
       return allScrapers;
@@ -95,6 +99,9 @@ export async function cleanupAllScrapers(): Promise<void> {
   
   for (const scraper of scrapers) {
     if (scraper instanceof LeetxScraper) {
+      await scraper.cleanup();
+    }
+    if (scraper instanceof NyaaScraper) {
       await scraper.cleanup();
     }
   }

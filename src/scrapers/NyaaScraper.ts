@@ -1,92 +1,184 @@
 import { BaseScraperClass } from './BaseScraper';
 import { ScraperConfig } from '@/types';
+import { chromium, Browser, Page } from 'playwright';
 import * as cheerio from 'cheerio';
 
 export class NyaaScraper extends BaseScraperClass {
+  private browser: Browser | null = null;
+
   constructor(config: ScraperConfig) {
     super(config);
   }
 
-  protected async performSearch(query: string, limit: number = 50): Promise<Record<string, unknown>[]> {
-    const searchUrl = this.buildSearchUrl(query);
+    protected async performSearch(query: string, limit: number = 50): Promise<Record<string, unknown>[]> {
+    let page: Page | null = null;
     
-    try {
-      const response = await this.axiosInstance.get(searchUrl, {
-        headers: this.getHeaders(),
-      });
+    // Try multiple Nyaa mirrors if main site fails
+    const fallbackMirrors = [
+      this.config.baseUrl,
+      'https://nyaa.si',
+      'https://nyaa.net'
+    ];
 
-      const $ = cheerio.load(response.data);
-      const results: Record<string, unknown>[] = [];
+    for (const baseUrl of fallbackMirrors) {
+      try {
+        // Initialize browser if needed
+        if (!this.browser) {
+          this.browser = await chromium.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+          });
+        }
 
-      // Parse Nyaa search results table
-      $('table.torrent-list tbody tr').each((index, element) => {
+        page = await this.browser.newPage();
+        
+        // Set user agent and headers to avoid detection
+        await page.setExtraHTTPHeaders({
+          'User-Agent': this.config.userAgent,
+          ...this.getHeaders(),
+        });
+
+        const searchUrl = this.buildSearchUrlWithBase(baseUrl, query);
+        console.log(`[Nyaa] Trying mirror with Playwright: ${baseUrl}`);
+        
+        // Navigate to search page and handle redirects
+        await page.goto(searchUrl, { 
+          waitUntil: 'domcontentloaded',
+          timeout: this.config.timeout 
+        });
+
+                 // Wait for any JavaScript redirects to complete
+         await page.waitForTimeout(3000);
+
+         // Check if we're on a lander page and follow the redirect
+         const currentUrl = page.url();
+         if (currentUrl.includes('/lander')) {
+           console.log(`[Nyaa] Detected lander page, following redirect...`);
+           // Wait for the page to load completely after redirect
+           await page.waitForLoadState('networkidle', { timeout: 5000 });
+         }
+
+         // Get the final page content after redirects
+         const content = await page.content();
+         
+         // Check if we still have protection or empty content
+         if (content.includes('checking your browser') || content.length < 1000) {
+           console.log(`[Nyaa] Mirror ${baseUrl} has anti-bot protection, trying next...`);
+           await page.close();
+           continue;
+         }
+
+        const $ = cheerio.load(content);
+        const results: Record<string, unknown>[] = [];
+
+      // Try multiple selectors for different Nyaa layouts
+      const possibleSelectors = [
+        'table.torrent-list tbody tr',
+        'tbody tr',
+        'table tbody tr',
+        '.torrent-info',
+        'tr'
+      ];
+
+      let $resultRows = $();
+      for (const selector of possibleSelectors) {
+        $resultRows = $(selector);
+        if ($resultRows.length > 1) { // Need more than just header row
+          console.log(`[Nyaa] Found ${$resultRows.length} rows using selector: ${selector}`);
+          break;
+        }
+      }
+
+      if ($resultRows.length <= 1) {
+        console.log('[Nyaa] No results found. Page HTML snippet:', response.data.substring(0, 1000));
+        return [];
+      }
+
+      // Parse search results table
+      $resultRows.each((index, element) => {
         if (index >= limit) return false;
 
         const $row = $(element);
         const $cells = $row.find('td');
 
-        if ($cells.length < 6) return; // Skip invalid rows
+        // Skip header rows and invalid rows
+        if ($cells.length < 3 || $row.hasClass('header')) return;
 
-        // Extract category
-        const $categoryCell = $cells.eq(0);
-        const categoryTitle = $categoryCell.find('a').attr('title') || '';
-        const category = this.mapNyaaCategory(categoryTitle);
-
-        // Extract title and links
-        const $nameCell = $cells.eq(1);
-        const $titleLinks = $nameCell.find('a');
-        
+        // Flexible parsing for different Nyaa layouts
         let title = '';
         let link = '';
         let magnetLink = '';
+        let seeds = 0;
+        let leechers = 0;
+        let size = '0 B';
+        let uploadDate = '';
+        let category = 'anime';
+        let verified = false;
 
-        $titleLinks.each((i, linkEl) => {
+        // Find all links in the row
+        const $allLinks = $row.find('a');
+        
+        $allLinks.each((i, linkEl) => {
           const $link = $(linkEl);
           const href = $link.attr('href') || '';
+          const linkText = this.extractText($link.text());
           
           if (href.startsWith('magnet:')) {
             magnetLink = href;
-          } else if (href.includes('/view/')) {
-            title = this.extractText($link.text());
-            link = this.config.baseUrl + href;
+          } else if (href.includes('/view/') && linkText && linkText.length > 5) {
+            title = linkText;
+            link = href.startsWith('http') ? href : this.config.baseUrl + href;
+          } else if (href.includes('/download/') && !magnetLink) {
+            // Torrent file download link
+            magnetLink = href.startsWith('http') ? href : this.config.baseUrl + href;
           }
         });
 
-        // Extract torrent file link if no magnet
-        if (!magnetLink) {
-          const $torrentLink = $nameCell.find('a[href$=".torrent"]');
-          if ($torrentLink.length) {
-            const torrentHref = $torrentLink.attr('href');
-            if (torrentHref) {
-              // Convert torrent file link to magnet (would need hash extraction)
-              magnetLink = torrentHref.startsWith('http') ? torrentHref : this.config.baseUrl + torrentHref;
+        // Extract numeric data from cells
+        $cells.each((cellIndex, cellEl) => {
+          const $cell = $(cellEl);
+          const cellText = $cell.text().trim();
+          
+          // Look for size patterns (MB, GB, etc.)
+          if (cellText.match(/\d+\.?\d*\s*(MB|GB|TB|KB)/i)) {
+            size = cellText;
+          }
+          
+          // Look for date patterns
+          if (cellText.match(/\d{4}-\d{2}-\d{2}/) || cellText.match(/\d{2}-\d{2}\s+\d{4}/)) {
+            uploadDate = cellText;
+          }
+          
+          // Look for seeds/leechers (pure numbers or numbers with styling)
+          const numValue = this.parseNumber(cellText);
+          if (numValue > 0 && cellText.match(/^\s*\d+\s*$/)) {
+            if (seeds === 0) {
+              seeds = numValue;
+            } else if (leechers === 0) {
+              leechers = numValue;
             }
           }
-        }
+        });
 
-        // Extract size
-        const $sizeCell = $cells.eq(3);
-        const size = this.extractText($sizeCell.text()) || '0 B';
+        // Look for category info
+        const $categoryIcons = $row.find('img, .category');
+        $categoryIcons.each((i, iconEl) => {
+          const $icon = $(iconEl);
+          const title = $icon.attr('title') || $icon.attr('alt') || '';
+          if (title) {
+            category = this.mapNyaaCategory(title);
+          }
+        });
 
-        // Extract upload date
-        const $dateCell = $cells.eq(4);
-        const uploadDate = this.extractText($dateCell.text());
+        // Check for trusted/verified indicators
+        verified = $row.find('.fa-check-circle, .fa-star, .trusted, .vip').length > 0;
 
-        // Extract seeds and leechers
-        const $seedsCell = $cells.eq(5);
-        const $leechersCell = $cells.eq(6);
-        const seeds = this.parseNumber($seedsCell.text());
-        const leechers = this.parseNumber($leechersCell.text());
-
-        // Check if trusted/verified uploader
-        const verified = $nameCell.find('.fa-check-circle, .fa-star').length > 0;
-
-        // Extract additional info from title
-        const { cleanTitle, quality, episode } = this.parseAnimeTitle(title);
-
-        if (title && (magnetLink || link)) {
+        // Only include results with a title
+        if (title.trim() && title.length > 3) {
+          const { cleanTitle, quality, episode } = this.parseAnimeTitle(title);
+          
           results.push({
-            title: cleanTitle || title,
+            title: cleanTitle || title.trim(),
             magnetLink,
             seeds,
             leechers,
@@ -102,18 +194,35 @@ export class NyaaScraper extends BaseScraperClass {
         }
       });
 
-      return results;
+        console.log(`[Nyaa] Successfully parsed ${results.length} results from ${baseUrl}`);
+        await page.close();
+        return results;
 
-    } catch (error) {
-      console.error('[Nyaa] Search failed:', error);
-      throw this.createError('PARSE_ERROR', 'Failed to parse Nyaa search results', error);
+      } catch (error) {
+        console.error(`[Nyaa] Mirror ${baseUrl} failed:`, error);
+        if (page) {
+          await page.close();
+        }
+        // Continue to next mirror
+      }
     }
+
+    // If all mirrors failed
+    console.error('[Nyaa] All mirrors failed');
+    throw this.createError('NETWORK_ERROR', 'All Nyaa mirrors are unavailable');
   }
 
   protected buildSearchUrl(query: string): string {
-    const encodedQuery = encodeURIComponent(this.cleanQuery(query));
-    // Filter for anime and sort by seeders
-    return `${this.config.baseUrl}/?f=0&c=1_0&q=${encodedQuery}&s=seeders&o=desc`;
+    return this.buildSearchUrlWithBase(this.config.baseUrl, query);
+  }
+
+  protected buildSearchUrlWithBase(baseUrl: string, query: string): string {
+    const cleanedQuery = this.cleanQuery(query);
+    const encodedQuery = encodeURIComponent(cleanedQuery);
+    // Simple search without complex filtering to avoid issues
+    const searchUrl = `${baseUrl}/?q=${encodedQuery}&s=seeders&o=desc`;
+    console.log(`[Nyaa] Building search URL: ${searchUrl}`);
+    return searchUrl;
   }
 
   protected getHeaders(): Record<string, string> {
@@ -164,5 +273,15 @@ export class NyaaScraper extends BaseScraperClass {
       quality: qualityMatch ? qualityMatch[1] : undefined,
       episode: episodeMatch ? episodeMatch[1] : undefined,
     };
+  }
+
+  /**
+   * Clean up resources
+   */
+  async cleanup(): Promise<void> {
+    if (this.browser) {
+      await this.browser.close();
+      this.browser = null;
+    }
   }
 }

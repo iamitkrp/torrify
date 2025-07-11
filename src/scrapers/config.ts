@@ -3,13 +3,13 @@ import { ScraperConfig } from '@/types';
 const DEFAULT_USER_AGENT = process.env.USER_AGENT || 
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
 
-const DEFAULT_TIMEOUT = parseInt(process.env.SCRAPING_TIMEOUT || '10000');
+const DEFAULT_TIMEOUT = parseInt(process.env.SCRAPING_TIMEOUT || '15000');
 const DEFAULT_RATE_LIMIT = parseInt(process.env.REQUEST_DELAY || '1000');
 
 export const SCRAPER_CONFIGS: Record<string, ScraperConfig> = {
   piratebay: {
     name: 'The Pirate Bay',
-    baseUrl: 'https://thepiratebay.org',
+    baseUrl: 'https://piratebay.live', // Try a different working mirror
     timeout: DEFAULT_TIMEOUT,
     userAgent: DEFAULT_USER_AGENT,
     enabled: true,
@@ -19,9 +19,9 @@ export const SCRAPER_CONFIGS: Record<string, ScraperConfig> = {
   leetx: {
     name: '1337x',
     baseUrl: 'https://1337x.to',
-    timeout: DEFAULT_TIMEOUT,
+    timeout: DEFAULT_TIMEOUT * 1.2, // Give 1337x more time
     userAgent: DEFAULT_USER_AGENT,
-    enabled: true,
+    enabled: false, // Temporarily disable due to parsing issues
     usePlaywright: true, // 1337x has more dynamic content
     rateLimit: DEFAULT_RATE_LIMIT * 1.5, // Slightly higher rate limit
   },
@@ -30,7 +30,7 @@ export const SCRAPER_CONFIGS: Record<string, ScraperConfig> = {
     baseUrl: 'https://yts.mx',
     timeout: DEFAULT_TIMEOUT,
     userAgent: DEFAULT_USER_AGENT,
-    enabled: true,
+    enabled: false, // Temporarily disable due to timeout issues
     usePlaywright: false, // YTS has a clean API-like structure
     rateLimit: DEFAULT_RATE_LIMIT * 0.5, // Lower rate limit for API-like requests
   },
@@ -40,8 +40,17 @@ export const SCRAPER_CONFIGS: Record<string, ScraperConfig> = {
     timeout: DEFAULT_TIMEOUT,
     userAgent: DEFAULT_USER_AGENT,
     enabled: true,
+    usePlaywright: true, // Enable Playwright to handle JavaScript redirects
+    rateLimit: DEFAULT_RATE_LIMIT * 1.5, // Slower rate for Playwright
+  },
+  test: {
+    name: 'Test Scraper',
+    baseUrl: 'https://example.com',
+    timeout: DEFAULT_TIMEOUT,
+    userAgent: DEFAULT_USER_AGENT,
+    enabled: false, // Disabled since real scrapers are working
     usePlaywright: false,
-    rateLimit: DEFAULT_RATE_LIMIT,
+    rateLimit: 100, // Very low rate limit for test
   },
 };
 

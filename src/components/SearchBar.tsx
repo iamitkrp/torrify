@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Loader2 } from 'lucide-react';
 import { SearchBarProps } from '@/types';
-import { debounce } from '@/lib/utils';
 
 export default function SearchBar({
   onSearch,
@@ -14,22 +13,10 @@ export default function SearchBar({
   const [query, setQuery] = useState(defaultValue);
   const [isFocused, setIsFocused] = useState(false);
 
-  // Debounced search function
-  const debouncedSearch = debounce((searchQuery: unknown) => {
-    if (typeof searchQuery === 'string' && searchQuery.trim().length >= 2) {
-      onSearch(searchQuery.trim());
-    }
-  }, 300);
-
   // Handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
-    
-    // Only trigger search if we have at least 2 characters
-    if (value.trim().length >= 2) {
-      debouncedSearch(value);
-    }
   };
 
   // Handle form submission

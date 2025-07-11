@@ -75,7 +75,7 @@ export class YTSScraper extends BaseScraperClass {
 
   protected buildSearchUrl(query: string): string {
     const encodedQuery = encodeURIComponent(this.cleanQuery(query));
-    return `${this.config.baseUrl}/browse-movies/${encodedQuery}/all/all/0/latest/0/all`;
+    return `${this.config.baseUrl}/browse-movies?search_term=${encodedQuery}`;
   }
 
   protected getHeaders(): Record<string, string> {

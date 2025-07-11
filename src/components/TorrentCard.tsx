@@ -1,13 +1,41 @@
 'use client';
 
+import { useState } from 'react';
 import { TorrentCardProps } from '@/types';
-import { Download, Users, Upload, Calendar, ExternalLink, Shield } from 'lucide-react';
+import { Download, Users, Upload, Calendar, ExternalLink, Shield, Copy, Check } from 'lucide-react';
 import { parseDate } from '@/lib/utils';
 
 export default function TorrentCard({ torrent, onMagnetClick }: TorrentCardProps) {
+  const [copied, setCopied] = useState(false);
+
   const handleMagnetClick = () => {
     if (torrent.magnetLink && onMagnetClick) {
       onMagnetClick(torrent.magnetLink);
+    }
+  };
+
+  const handleCopyClick = async () => {
+    if (torrent.magnetLink) {
+      try {
+        await navigator.clipboard.writeText(torrent.magnetLink);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+      } catch (err) {
+        console.error('Failed to copy magnet link:', err);
+        // Fallback for older browsers
+        try {
+          const textArea = document.createElement('textarea');
+          textArea.value = torrent.magnetLink;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } catch (fallbackErr) {
+          console.error('Fallback copy also failed:', fallbackErr);
+        }
+      }
     }
   };
 
@@ -127,6 +155,38 @@ export default function TorrentCard({ torrent, onMagnetClick }: TorrentCardProps
           >
             <Download className="w-4 h-4" />
             No Magnet
+          </button>
+        )}
+
+        {/* Copy Torrent Button */}
+        {torrent.magnetLink ? (
+          <button
+            onClick={handleCopyClick}
+            className={`flex-1 flex items-center justify-center gap-2 text-sm font-medium py-2 px-3 rounded-md transition-colors ${
+              copied 
+                ? 'bg-green-600 text-white' 
+                : 'bg-slate-600 hover:bg-slate-700 text-white'
+            }`}
+          >
+            {copied ? (
+              <>
+                <Check className="w-4 h-4" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4" />
+                Copy
+              </>
+            )}
+          </button>
+        ) : (
+          <button
+            disabled
+            className="flex-1 flex items-center justify-center gap-2 bg-slate-300 dark:bg-slate-600 text-slate-500 dark:text-slate-400 text-sm font-medium py-2 px-3 rounded-md cursor-not-allowed"
+          >
+            <Copy className="w-4 h-4" />
+            Copy
           </button>
         )}
 

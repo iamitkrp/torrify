@@ -18,6 +18,7 @@ function SearchResults() {
   const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filteredResults, setFilteredResults] = useState<TorrentResult[]>([]);
+  const [selectedSource, setSelectedSource] = useState<string>('all');
   
   const query = searchParams.get('q') || '';
   const [filters, setFilters] = useState<FilterOptions>({
@@ -71,14 +72,19 @@ function SearchResults() {
 
     let results = [...searchData.results];
     
-    // Apply filters
+    // Apply source filter
+    if (selectedSource !== 'all') {
+      results = results.filter(torrent => torrent.source === selectedSource);
+    }
+    
+    // Apply other filters
     results = filterTorrents(results, filters);
     
     // Apply sorting
     results = sortTorrents(results, filters.sortBy, filters.sortOrder);
     
     setFilteredResults(results);
-  }, [searchData, filters]);
+  }, [searchData, filters, selectedSource]);
 
   // Initial search on component mount
   useEffect(() => {
@@ -117,33 +123,70 @@ function SearchResults() {
             placeholder="Search torrents..."
           />
           
-          {/* Results Summary */}
+          {/* Source Tabs */}
           {searchData && !loading && (
-            <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <div className="text-sm text-slate-600 dark:text-slate-400">
-                {searchData.cached && (
-                  <span className="inline-flex items-center gap-1 mr-3">
-                    <Clock className="h-4 w-4" />
-                    Cached
-                  </span>
-                )}
-                <span>
-                  {filteredResults.length} results found in {searchData.executionTime}ms
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-2">
+            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex flex-wrap gap-2 mb-4">
                 <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors ${
-                    showFilters
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  onClick={() => setSelectedSource('all')}
+                  className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                    selectedSource === 'all'
+                      ? 'bg-red-500 text-white rounded-md'
+                      : 'text-slate-700 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400'
                   }`}
                 >
-                  <Filter className="h-4 w-4" />
-                  Filters
+                  All Sources
                 </button>
+                {availableSources.map((source) => {
+                  const sourceResultCount = searchData.results.filter(r => r.source === source).length;
+                  return (
+                    <button
+                      key={source}
+                      onClick={() => setSelectedSource(source)}
+                      className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                        selectedSource === source
+                          ? 'bg-red-500 text-white rounded-md'
+                          : 'text-slate-700 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400'
+                      }`}
+                    >
+                      {source} ({sourceResultCount})
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {/* Results Summary */}
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-slate-600 dark:text-slate-400">
+                  {searchData.cached && (
+                    <span className="inline-flex items-center gap-1 mr-3">
+                      <Clock className="h-4 w-4" />
+                      Cached
+                    </span>
+                  )}
+                  <span>
+                    {filteredResults.length} results found in {searchData.executionTime}ms
+                    {selectedSource !== 'all' && (
+                      <span className="ml-2 text-red-500 font-medium">
+                        from {selectedSource}
+                      </span>
+                    )}
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors ${
+                      showFilters
+                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <Filter className="h-4 w-4" />
+                    Filters
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -207,31 +250,46 @@ function SearchResults() {
 
             {/* Results Grid */}
             <div className={showFilters ? 'lg:col-span-3' : ''}>
-              {/* Results by Source */}
-              {Object.entries(groupedResults).map(([source, results]) => (
-                <div key={source} className="mb-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-medium text-slate-900 dark:text-white">
-                      {source}
-                    </h2>
-                    <span className="text-sm text-slate-500 dark:text-slate-400">
-                      {results.length} results
-                    </span>
+              {selectedSource === 'all' ? (
+                /* Results grouped by Source */
+                Object.entries(groupedResults).map(([source, results]) => (
+                  <div key={source} className="mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-lg font-medium text-slate-900 dark:text-white">
+                        {source}
+                      </h2>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">
+                        {results.length} results
+                      </span>
+                    </div>
+                    
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      {results.map((torrent, index) => (
+                        <TorrentCard
+                          key={`${source}-${index}`}
+                          torrent={torrent}
+                          onMagnetClick={(magnetLink: string) => {
+                            window.open(magnetLink, '_blank');
+                          }}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  
-                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    {results.map((torrent, index) => (
-                      <TorrentCard
-                        key={`${source}-${index}`}
-                        torrent={torrent}
-                        onMagnetClick={(magnetLink: string) => {
-                          window.open(magnetLink, '_blank');
-                        }}
-                      />
-                    ))}
-                  </div>
+                ))
+              ) : (
+                /* Results from single source */
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {filteredResults.map((torrent, index) => (
+                    <TorrentCard
+                      key={`${selectedSource}-${index}`}
+                      torrent={torrent}
+                      onMagnetClick={(magnetLink: string) => {
+                        window.open(magnetLink, '_blank');
+                      }}
+                    />
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           </div>
         )}

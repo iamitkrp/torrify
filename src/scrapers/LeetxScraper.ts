@@ -32,14 +32,19 @@ export class LeetxScraper extends BaseScraperClass {
 
       const searchUrl = this.buildSearchUrl(query);
       
-      // Navigate to search page
+      // Navigate to search page with retries
       await page.goto(searchUrl, { 
-        waitUntil: 'networkidle',
+        waitUntil: 'domcontentloaded',
         timeout: this.config.timeout 
       });
 
-      // Wait for search results to load
-      await page.waitForSelector('table.table-list tbody tr', { timeout: 5000 });
+      // Wait for search results to load - be more flexible with selectors
+      try {
+        await page.waitForSelector('table.table-list tbody tr, .no-results, .search-results', { timeout: 8000 });
+      } catch (error) {
+        // If specific selectors fail, just wait a bit for general content
+        await page.waitForTimeout(2000);
+      }
 
       // Get page content and parse with Cheerio
       const content = await page.content();
@@ -47,14 +52,22 @@ export class LeetxScraper extends BaseScraperClass {
       
       const results: Record<string, unknown>[] = [];
 
-      // Parse 1337x search results
-      $('table.table-list tbody tr').each((index, element) => {
+      // Parse 1337x search results - try multiple selectors
+      const resultSelector = 'table.table-list tbody tr, .table-list tr, tbody tr';
+      const $results = $(resultSelector);
+      
+      if ($results.length === 0) {
+        console.log('[1337x] No results found for query:', query);
+        return [];
+      }
+
+      $results.each((index, element) => {
         if (index >= limit) return false;
 
         const $row = $(element);
         const $cells = $row.find('td');
 
-        if ($cells.length < 5) return; // Skip invalid rows
+        if ($cells.length < 3) return; // Skip invalid rows (relaxed requirement)
 
         // Extract title and link
         const $nameCell = $cells.eq(0);
