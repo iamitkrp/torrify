@@ -70,8 +70,7 @@ export default function SearchBar({
             disabled={loading}
             className="w-full pl-14 pr-20 py-5 text-lg rounded-2xl bg-transparent border-none outline-none font-suisse placeholder:font-normal"
             style={{
-              color: 'var(--text-primary)',
-              '::placeholder': { color: 'var(--text-subtle)' }
+              color: 'var(--text-primary)'
             }}
             autoComplete="off"
             spellCheck="false"

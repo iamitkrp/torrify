@@ -194,7 +194,7 @@ export class RarbgScraper extends BaseScraperClass {
         // Validate results match query
         const cleanedQuery = this.cleanQuery(query).toLowerCase();
         const matchingResults = results.filter(result => 
-          result.title.toLowerCase().includes(cleanedQuery)
+          (result.title as string).toLowerCase().includes(cleanedQuery)
         );
 
         if (matchingResults.length === 0 && results.length > 0) {

@@ -154,6 +154,9 @@ export default function FilterPanel({ filters, onFiltersChange, availableSources
             color: 'var(--text-primary)',
             '--ring-color': 'var(--accent)',
             '--ring-opacity': '0.2'
+          } as React.CSSProperties & {
+            '--ring-color': string;
+            '--ring-opacity': string;
           }}
           placeholder="0"
         />
