@@ -388,7 +388,7 @@ function DesktopSearchResults() {
   const [headerVisible, setHeaderVisible] = useState(true);
   const lastScrollY = useRef(0);
   const isScrolling = useRef(false);
-  const scrollTimeout = useRef<NodeJS.Timeout>();
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
   
   const query = searchParams.get('q') || '';
   const [filters, setFilters] = useState<FilterOptions>({
