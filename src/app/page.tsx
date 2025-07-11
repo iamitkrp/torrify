@@ -1,102 +1,162 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import SearchBar from '@/components/SearchBar';
+import { Search, Zap, Shield, Cpu, Globe } from 'lucide-react';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const router = useRouter();
+  const [isSearching, setIsSearching] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) return;
+    
+    setIsSearching(true);
+    // Navigate to search results page
+    router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-blue-950">
+      {/* Header */}
+      <header className="px-6 py-4">
+        <nav className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <Search className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+            <span className="text-2xl font-bold text-slate-900 dark:text-white">
+              Torrify
+            </span>
+          </div>
+          <div className="hidden sm:flex items-center space-x-6 text-sm text-slate-600 dark:text-slate-300">
+            <span className="flex items-center gap-1">
+              <Shield className="h-4 w-4" />
+              Safe
+            </span>
+            <span className="flex items-center gap-1">
+              <Zap className="h-4 w-4" />
+              Fast
+            </span>
+            <span className="flex items-center gap-1">
+              <Globe className="h-4 w-4" />
+              Global
+            </span>
+          </div>
+        </nav>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-6 py-12 sm:py-20">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl sm:text-6xl font-bold text-slate-900 dark:text-white mb-6">
+            Search Torrents
+            <span className="block text-blue-600 dark:text-blue-400">
+              Across All Sources
+            </span>
+          </h1>
+          <p className="text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
+            Meta-search engine that aggregates results from multiple torrent sources
+            including The Pirate Bay, 1337x, YTS, and Nyaa.
+          </p>
+        </div>
+
+        {/* Search Section */}
+        <div className="mb-16">
+          <SearchBar
+            onSearch={handleSearch}
+            loading={isSearching}
+            placeholder="Search for movies, TV shows, music, games, software..."
+          />
+        </div>
+
+        {/* Features */}
+        <div className="grid md:grid-cols-3 gap-8 mb-16">
+          <div className="text-center p-6 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
+            <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Search className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+              Multi-Source Search
+            </h3>
+            <p className="text-slate-600 dark:text-slate-300 text-sm">
+              Search across The Pirate Bay, 1337x, YTS, and Nyaa simultaneously
+            </p>
+          </div>
+
+          <div className="text-center p-6 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
+            <div className="h-12 w-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Zap className="h-6 w-6 text-green-600 dark:text-green-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+              Lightning Fast
+            </h3>
+            <p className="text-slate-600 dark:text-slate-300 text-sm">
+              Concurrent scraping with caching for instant results
+            </p>
+          </div>
+
+          <div className="text-center p-6 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
+            <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Cpu className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+              Smart Filtering
+            </h3>
+            <p className="text-slate-600 dark:text-slate-300 text-sm">
+              Sort by seeds, size, date with advanced filtering options
+            </p>
+          </div>
+        </div>
+
+        {/* Quick Categories */}
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
+            Popular Categories
+          </h2>
+          <div className="flex flex-wrap justify-center gap-3">
+            {[
+              { name: 'Movies', query: 'movies 2024' },
+              { name: 'TV Shows', query: 'tv series' },
+              { name: 'Anime', query: 'anime' },
+              { name: 'Music', query: 'music albums' },
+              { name: 'Games', query: 'pc games' },
+              { name: 'Software', query: 'software' },
+            ].map((category) => (
+              <button
+                key={category.name}
+                onClick={() => handleSearch(category.query)}
+                className="px-4 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors text-sm font-medium"
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-200 dark:border-slate-800 mt-20">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="text-center text-sm text-slate-500 dark:text-slate-400">
+            <div className="mb-4">
+              <p className="font-medium text-orange-600 dark:text-orange-400 mb-2">
+                ⚠️ Educational Purpose Only
+              </p>
+              <p>
+                This site does not host any torrent files and is for educational purposes only.
+                Please respect copyright laws and use torrents responsibly.
+              </p>
+            </div>
+            <div className="flex justify-center items-center space-x-4">
+              <span>Made with ❤️ for the community</span>
+              <span>•</span>
+              <span>Open Source</span>
+              <span>•</span>
+              <span>Privacy Focused</span>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
