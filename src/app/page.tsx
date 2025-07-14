@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import SearchBar from '@/components/SearchBar';
 import { Search, ArrowRight } from 'lucide-react';
@@ -8,6 +8,26 @@ import { Search, ArrowRight } from 'lucide-react';
 export default function Home() {
   const router = useRouter();
   const [isSearching, setIsSearching] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Only apply scroll behavior on mobile (screen width < 768px)
+      if (window.innerWidth < 768) {
+        setIsScrolled(window.scrollY > 50);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleScroll);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, []);
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) return;
@@ -26,45 +46,34 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+    <div className="min-h-screen md:h-screen md:flex md:flex-col" style={{ backgroundColor: 'var(--background)' }}>
       {/* Header */}
-      <header className="px-6 py-6">
+      <header className={`px-6 py-4 flex-shrink-0 transition-transform duration-300 md:transform-none ${isScrolled ? '-translate-y-full md:translate-y-0' : 'translate-y-0'}`}>
         <nav className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-              <Search className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-heading text-xl font-medium" style={{ color: 'var(--text-primary)' }}>
-              Torrify
+            <span className="font-heading text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              <span style={{ color: '#8b5cf6' }}>Torr</span><span style={{ color: '#3b82f6' }}>i</span><span style={{ color: '#06b6d4' }}>fy</span>
             </span>
-          </div>
-          
-          <div className="hidden md:flex items-center space-x-8 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-            <span>Multi-source</span>
-            <span>•</span>
-            <span>Privacy-focused</span>
-            <span>•</span>
-            <span>Open source</span>
           </div>
         </nav>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 pt-16 pb-24">
+      <main className="flex-1 md:flex md:flex-col md:justify-center max-w-4xl mx-auto px-6 w-full">
         {/* Hero Section */}
-        <div className="text-center mb-16 animate-fade-in">
-          <h1 className="font-heading text-5xl md:text-6xl font-medium mb-6 text-balance" style={{ color: 'var(--text-primary)' }}>
+        <div className={`text-center mb-8 pt-16 md:pt-0 animate-fade-in transition-all duration-300 md:transform-none md:opacity-100 ${isScrolled ? '-translate-y-full opacity-0 md:translate-y-0' : 'translate-y-0 opacity-100'}`}>
+          <h1 className="font-heading text-4xl md:text-5xl font-medium mb-4 text-balance" style={{ color: 'var(--text-primary)' }}>
             Universal Torrent
-            <span className="block mt-2" style={{ color: 'var(--accent)' }}>Search Engine</span>
+            <span className="block mt-1" style={{ color: 'var(--accent)' }}>Search Engine</span>
           </h1>
-          <p className="text-lg md:text-xl mb-12 max-w-2xl mx-auto text-balance leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-base md:text-lg mb-8 max-w-2xl mx-auto text-balance leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
             Search across all major torrent sources simultaneously. 
             Clean interface, fast results, no tracking.
           </p>
         </div>
 
         {/* Search Section */}
-        <div className="mb-20 animate-slide-up">
+        <div className={`mb-10 animate-slide-up transition-all duration-300 md:transform-none md:opacity-100 ${isScrolled ? '-translate-y-full opacity-0 md:translate-y-0' : 'translate-y-0 opacity-100'}`}>
           <SearchBar
             onSearch={handleSearch}
             loading={isSearching}
@@ -72,9 +81,9 @@ export default function Home() {
           />
         </div>
 
-        {/* Quick Categories */}
-        <div className="mb-20 animate-slide-up">
-          <h2 className="font-heading text-xl font-medium mb-8 text-center" style={{ color: 'var(--text-primary)' }}>
+        {/* Quick Categories - Sticky on mobile when scrolled */}
+        <div className={`animate-slide-up transition-all duration-300 pb-20 md:pb-0 ${isScrolled ? 'md:relative fixed top-4 left-0 right-0 z-10 bg-[var(--background)] px-6 py-4 shadow-sm' : 'relative'}`}>
+          <h2 className="font-heading text-lg font-medium mb-6 text-center" style={{ color: 'var(--text-primary)' }}>
             Popular Categories
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-lg mx-auto">
@@ -82,7 +91,7 @@ export default function Home() {
               <button
                 key={category.name}
                 onClick={() => handleSearch(category.query)}
-                className="group flex items-center space-x-3 p-4 rounded-xl border transition-all duration-200 hover:shadow-sm hover:bg-[var(--surface-subtle)]"
+                className="group flex items-center space-x-3 p-3 rounded-xl border transition-all duration-200 hover:shadow-sm hover:bg-[var(--surface-subtle)]"
                 style={{ 
                   backgroundColor: 'var(--surface)',
                   borderColor: 'var(--border)'
@@ -97,74 +106,7 @@ export default function Home() {
             ))}
           </div>
         </div>
-
-        {/* Features */}
-        <div className="grid md:grid-cols-3 gap-8 mb-20">
-          <div className="text-center p-6">
-            <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--accent-subtle)' }}>
-              <Search className="h-5 w-5" style={{ color: 'var(--accent)' }} />
-            </div>
-            <h3 className="font-heading text-lg font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-              Multi-Source
-            </h3>
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              Search The Pirate Bay, 1337x, YTS, and Nyaa simultaneously for comprehensive results
-            </p>
-          </div>
-
-          <div className="text-center p-6">
-            <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--accent-subtle)' }}>
-              <svg className="h-5 w-5" style={{ color: 'var(--accent)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <h3 className="font-heading text-lg font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-              Lightning Fast
-            </h3>
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              Concurrent scraping with intelligent caching delivers results in milliseconds
-            </p>
-          </div>
-
-          <div className="text-center p-6">
-            <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--accent-subtle)' }}>
-              <svg className="h-5 w-5" style={{ color: 'var(--accent)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-            <h3 className="font-heading text-lg font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-              Privacy First
-            </h3>
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              No tracking, no ads, no data collection. Your searches remain completely private
-            </p>
-          </div>
-        </div>
       </main>
-
-      {/* Footer */}
-      <footer className="border-t mt-20" style={{ borderColor: 'var(--border)' }}>
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <div className="text-center">
-            <div className="mb-4">
-              <p className="text-sm font-medium mb-2" style={{ color: 'var(--warning)' }}>
-                ⚠️ Educational Purpose Only
-              </p>
-              <p className="text-sm leading-relaxed max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
-                This application is for educational purposes only. We do not host any content and are not responsible 
-                for how you use this tool. Please respect copyright laws and content creators.
-              </p>
-            </div>
-            <div className="flex justify-center items-center space-x-6 text-sm" style={{ color: 'var(--text-subtle)' }}>
-              <span>Made with care</span>
-              <span>•</span>
-              <span>Open source</span>
-              <span>•</span>
-              <span>Privacy focused</span>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

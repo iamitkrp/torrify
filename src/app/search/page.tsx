@@ -104,12 +104,9 @@ function MobileSearchResults() {
               <ArrowLeft className="h-5 w-5" />
             </button>
             
-            <div className="flex items-center space-x-3">
-              <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                <Search className="h-4 w-4 text-white" />
-              </div>
-              <h1 className="font-heading text-xl font-medium" style={{ color: 'var(--text-primary)' }}>
-                Torrify
+            <div className="flex items-center">
+              <h1 className="font-heading text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                <span style={{ color: '#8b5cf6' }}>Torr</span><span style={{ color: '#3b82f6' }}>i</span><span style={{ color: '#06b6d4' }}>fy</span>
               </h1>
             </div>
 
@@ -335,7 +332,7 @@ function MobileSearchResults() {
         )}
       </main>
 
-      {/* Mobile Filter Bottom Sheet */}
+      {/* Mobile Filter Dialog */}
       {showFilters && (
         <>
           <div 
@@ -343,25 +340,22 @@ function MobileSearchResults() {
             onClick={() => setShowFilters(false)}
           />
           <div 
-            className="fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] rounded-t-3xl overflow-hidden animate-slide-up"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[95vw] max-w-4xl rounded-2xl shadow-2xl"
             style={{ backgroundColor: 'var(--surface)' }}
           >
-            <div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
-              <div className="flex items-center justify-between">
-                <h3 className="font-heading text-xl font-medium" style={{ color: 'var(--text-primary)' }}>
-                  Filter Results
-                </h3>
-                <button
-                  onClick={() => setShowFilters(false)}
-                  className="p-2 rounded-full" 
-                  style={{ backgroundColor: 'var(--surface-subtle)', color: 'var(--text-secondary)' }}
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </button>
-              </div>
-              <div className="w-10 h-1 rounded-full mx-auto mt-3" style={{ backgroundColor: 'var(--border)' }} />
+            <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--border)' }}>
+              <h3 className="font-heading text-lg font-medium" style={{ color: 'var(--text-primary)' }}>
+                Filter Results
+              </h3>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="p-2 rounded-full" 
+                style={{ backgroundColor: 'var(--surface-subtle)', color: 'var(--text-secondary)' }}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
             </div>
-            <div className="overflow-y-auto max-h-[calc(85vh-80px)] p-4">
+            <div className="p-2">
               <FilterPanel
                 filters={filters}
                 onFiltersChange={setFilters}
@@ -527,12 +521,9 @@ function DesktopSearchResults() {
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
-            <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <Search className="h-3 w-3 text-white" />
-              </div>
-              <span className="font-heading text-lg font-medium" style={{ color: 'var(--text-primary)' }}>
-                Torrify
+            <div className="flex items-center">
+              <span className="font-heading text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                <span style={{ color: '#8b5cf6' }}>Torr</span><span style={{ color: '#3b82f6' }}>i</span><span style={{ color: '#06b6d4' }}>fy</span>
               </span>
             </div>
           </div>
@@ -614,7 +605,7 @@ function DesktopSearchResults() {
       </header>
 
       {/* Content with proper top spacing */}
-      <div className="pt-64">
+      <div className="pt-72">
         {/* Main Content */}
         <main className="max-w-6xl mx-auto px-6 py-8">
           {/* Loading State */}
@@ -672,67 +663,51 @@ function DesktopSearchResults() {
 
           {/* Results */}
           {!loading && !error && filteredResults.length > 0 && (
-            <div className={`${showFilters ? 'lg:grid lg:grid-cols-4 lg:gap-8' : ''}`}>
-              {/* Filters Sidebar */}
-              {showFilters && (
-                <div className="lg:col-span-1 mb-8 lg:mb-0">
-                  <div className="sticky top-72">
-                    <FilterPanel
-                      filters={filters}
-                      onFiltersChange={setFilters}
-                      availableSources={availableSources}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Results Grid */}
-              <div className={showFilters ? 'lg:col-span-3' : ''}>
-                {selectedSource === 'all' ? (
-                  /* Results grouped by Source */
-                  Object.entries(groupedResults).map(([source, results]) => (
-                    <div key={source} className="mb-10">
-                      <div className="flex items-center justify-between mb-6">
-                        <h2 className="font-heading text-xl font-medium" style={{ color: 'var(--text-primary)' }}>
-                          {source}
-                        </h2>
-                        <span className="text-sm font-medium px-3 py-1 rounded-full" style={{ 
-                          backgroundColor: 'var(--surface-subtle)', 
-                          color: 'var(--text-secondary)' 
-                        }}>
-                          {results.length} results
-                        </span>
-                      </div>
-                      
-                      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                        {results.map((torrent, index) => (
-                          <TorrentCard
-                            key={`${source}-${index}`}
-                            torrent={torrent}
-                            onMagnetClick={(magnetLink: string) => {
-                              window.open(magnetLink, '_blank');
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  /* Results from single source */
-                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    {filteredResults.map((torrent, index) => (
-                      <TorrentCard
-                        key={`${selectedSource}-${index}`}
-                        torrent={torrent}
-                        onMagnetClick={(magnetLink: string) => {
-                          window.open(magnetLink, '_blank');
-                        }}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {filteredResults.map((torrent, index) => (
+                <TorrentCard
+                  key={`${torrent.source}-${index}`}
+                  torrent={torrent}
+                  onMagnetClick={(magnetLink: string) => {
+                    window.open(magnetLink, '_blank');
+                  }}
+                />
+              ))}
             </div>
+          )}
+
+          {/* Desktop Filter Dialog */}
+          {showFilters && (
+            <>
+              <div 
+                className="fixed inset-0 bg-black/50 z-50"
+                onClick={() => setShowFilters(false)}
+              />
+              <div 
+                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[95vw] max-w-5xl rounded-2xl shadow-2xl"
+                style={{ backgroundColor: 'var(--surface)' }}
+              >
+                <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--border)' }}>
+                  <h3 className="font-heading text-lg font-medium" style={{ color: 'var(--text-primary)' }}>
+                    Filter Results
+                  </h3>
+                  <button
+                    onClick={() => setShowFilters(false)}
+                    className="p-2 rounded-full hover:shadow-sm transition-all duration-200" 
+                    style={{ backgroundColor: 'var(--surface-subtle)', color: 'var(--text-secondary)' }}
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="p-2">
+                  <FilterPanel
+                    filters={filters}
+                    onFiltersChange={setFilters}
+                    availableSources={availableSources}
+                  />
+                </div>
+              </div>
+            </>
           )}
         </main>
       </div>

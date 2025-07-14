@@ -31,7 +31,7 @@ export interface SearchParams {
 }
 
 // Sort options for filtering
-export type SortOption = 'seeds' | 'leechers' | 'size' | 'date' | 'title';
+export type SortOption = 'seeds' | 'leechers' | 'size' | 'date' | 'health';
 
 // Filter options
 export interface FilterOptions {

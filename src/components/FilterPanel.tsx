@@ -1,29 +1,27 @@
 'use client';
 
 import { FilterPanelProps, SortOption } from '@/types';
-import { Check, ChevronDown, ArrowUpDown } from 'lucide-react';
+import { Check, ChevronDown, ArrowUpDown, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import { useState } from 'react';
 
 export default function FilterPanel({ filters, onFiltersChange, availableSources }: FilterPanelProps) {
-  const [showSources, setShowSources] = useState(false);
-  const [showCategories, setShowCategories] = useState(false);
 
   const categories = [
-    { value: 'movies', label: 'Movies' },
-    { value: 'tv', label: 'TV Shows' },
-    { value: 'anime', label: 'Anime' },
-    { value: 'music', label: 'Music' },
-    { value: 'games', label: 'Games' },
-    { value: 'software', label: 'Software' },
-    { value: 'books', label: 'Books' },
+    { value: 'movies', label: 'Movies', emoji: '🎬' },
+    { value: 'tv', label: 'TV Shows', emoji: '📺' },
+    { value: 'anime', label: 'Anime', emoji: '🎌' },
+    { value: 'music', label: 'Music', emoji: '🎵' },
+    { value: 'games', label: 'Games', emoji: '🎮' },
+    { value: 'software', label: 'Software', emoji: '💻' },
+    { value: 'books', label: 'Books', emoji: '📚' },
   ];
 
-  const sortOptions: { value: SortOption; label: string }[] = [
-    { value: 'seeds', label: 'Seeds' },
-    { value: 'leechers', label: 'Leechers' },
-    { value: 'size', label: 'Size' },
-    { value: 'date', label: 'Upload Date' },
-    { value: 'title', label: 'Title' },
+  const sortOptions: { value: SortOption; label: string; icon: string }[] = [
+    { value: 'seeds', label: 'Seeds', icon: '🌱' },
+    { value: 'leechers', label: 'Leechers', icon: '⬇️' },
+    { value: 'size', label: 'Size', icon: '📦' },
+    { value: 'date', label: 'Date', icon: '📅' },
+    { value: 'health', label: 'Health', icon: '💚' },
   ];
 
   const handleSourceToggle = (source: string) => {
@@ -52,8 +50,12 @@ export default function FilterPanel({ filters, onFiltersChange, availableSources
   };
 
   const handleMinSeedsChange = (value: string) => {
-    const minSeeds = parseInt(value) || 0;
-    onFiltersChange({ ...filters, minSeeds });
+    if (value === '') {
+      onFiltersChange({ ...filters, minSeeds: 0 });
+    } else {
+      const minSeeds = Math.max(0, parseInt(value) || 0);
+      onFiltersChange({ ...filters, minSeeds });
+    }
   };
 
   const resetFilters = () => {
@@ -66,221 +68,156 @@ export default function FilterPanel({ filters, onFiltersChange, availableSources
     });
   };
 
+  const hasActiveFilters = filters.sources.length > 0 || filters.categories.length > 0 || filters.minSeeds > 0;
+
   return (
     <div 
-      className="rounded-xl border p-5 space-y-6"
+      className="rounded-xl border shadow-sm p-3"
       style={{
         backgroundColor: 'var(--surface)',
-        borderColor: 'var(--border)'
+        borderColor: 'var(--border-subtle)'
       }}
     >
-      <div className="flex items-center justify-between">
-        <h3 className="font-heading text-lg font-medium" style={{ color: 'var(--text-primary)' }}>
-          Filters
-        </h3>
-        <button
-          onClick={resetFilters}
-          className="text-sm font-medium transition-colors duration-200"
-          style={{ color: 'var(--accent)' }}
-        >
-          Reset
-        </button>
-      </div>
-
-      {/* Sort Options */}
-      <div>
-        <label className="block text-sm font-medium mb-4" style={{ color: 'var(--text-primary)' }}>
-          Sort By
-        </label>
-        <div className="space-y-3">
-          {sortOptions.map((option) => (
-            <label
-              key={option.value}
-              className="flex items-center gap-3 cursor-pointer group"
-            >
-              <div className="relative">
-                <input
-                  type="radio"
-                  name="sortBy"
-                  value={option.value}
-                  checked={filters.sortBy === option.value}
-                  onChange={() => handleSortChange(option.value)}
-                  className="w-4 h-4 opacity-0 absolute"
-                />
-                <div 
-                  className="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-200"
-                  style={{
-                    borderColor: filters.sortBy === option.value ? 'var(--accent)' : 'var(--border)',
-                    backgroundColor: filters.sortBy === option.value ? 'var(--accent)' : 'transparent'
-                  }}
-                >
-                  {filters.sortBy === option.value && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                  )}
-                </div>
-              </div>
-              <span className="text-sm font-suisse" style={{ color: 'var(--text-primary)' }}>
-                {option.label}
-              </span>
-            </label>
-          ))}
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5">
+          <SlidersHorizontal className="w-4 h-4" style={{ color: 'var(--accent)' }} />
+          <h3 className="font-heading text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Filters
+          </h3>
         </div>
-        
-        {/* Sort Order Toggle */}
-        <button
-          onClick={handleSortOrderToggle}
-          className="mt-4 flex items-center gap-2 text-sm font-medium transition-colors duration-200"
-          style={{ color: 'var(--text-secondary)' }}
-        >
-          <ArrowUpDown className="w-4 h-4" />
-          {filters.sortOrder === 'desc' ? 'Descending' : 'Ascending'}
-        </button>
-      </div>
-
-      {/* Minimum Seeds */}
-      <div>
-        <label className="block text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>
-          Minimum Seeds
-        </label>
-        <input
-          type="number"
-          min="0"
-          value={filters.minSeeds}
-          onChange={(e) => handleMinSeedsChange(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl border text-sm font-suisse transition-all duration-200 focus:outline-none focus:ring-2"
-          style={{
-            backgroundColor: 'var(--surface-subtle)',
-            borderColor: 'var(--border)',
-            color: 'var(--text-primary)',
-            '--ring-color': 'var(--accent)',
-            '--ring-opacity': '0.2'
-          } as React.CSSProperties & {
-            '--ring-color': string;
-            '--ring-opacity': string;
-          }}
-          placeholder="0"
-        />
-      </div>
-
-      {/* Sources Filter */}
-      {availableSources.length > 0 && (
-        <div>
+        {hasActiveFilters && (
           <button
-            onClick={() => setShowSources(!showSources)}
-            className="flex items-center justify-between w-full text-sm font-medium mb-3 transition-colors duration-200"
-            style={{ color: 'var(--text-primary)' }}
+            onClick={resetFilters}
+            className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md transition-all duration-200 hover:shadow-sm"
+            style={{ 
+              backgroundColor: 'var(--surface-subtle)', 
+              color: 'var(--accent)' 
+            }}
           >
-            Sources
-            <ChevronDown 
-              className={`w-4 h-4 transition-transform duration-200 ${showSources ? 'rotate-180' : ''}`}
-              style={{ color: 'var(--text-subtle)' }}
-            />
+            <RotateCcw className="w-3 h-3" />
+            Reset
           </button>
-          
-          {showSources && (
-            <div className="space-y-3 max-h-40 overflow-y-auto">
-              {availableSources.map((source) => (
-                <label
-                  key={source}
-                  className="flex items-center gap-3 cursor-pointer group"
-                >
-                  <div className="relative">
-                    <input
-                      type="checkbox"
-                      checked={filters.sources.includes(source)}
-                      onChange={() => handleSourceToggle(source)}
-                      className="w-4 h-4 opacity-0 absolute"
-                    />
-                    <div 
-                      className="w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200"
-                      style={{
-                        borderColor: filters.sources.includes(source) ? 'var(--accent)' : 'var(--border)',
-                        backgroundColor: filters.sources.includes(source) ? 'var(--accent)' : 'transparent'
-                      }}
-                    >
-                      {filters.sources.includes(source) && (
-                        <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
-                      )}
-                    </div>
-                  </div>
-                  <span className="text-sm font-suisse" style={{ color: 'var(--text-primary)' }}>
-                    {source}
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Categories Filter */}
-      <div>
-        <button
-          onClick={() => setShowCategories(!showCategories)}
-          className="flex items-center justify-between w-full text-sm font-medium mb-3 transition-colors duration-200"
-          style={{ color: 'var(--text-primary)' }}
-        >
-          Categories
-          <ChevronDown 
-            className={`w-4 h-4 transition-transform duration-200 ${showCategories ? 'rotate-180' : ''}`}
-            style={{ color: 'var(--text-subtle)' }}
-          />
-        </button>
-        
-        {showCategories && (
-          <div className="space-y-3 max-h-40 overflow-y-auto">
-            {categories.map((category) => (
-              <label
-                key={category.value}
-                className="flex items-center gap-3 cursor-pointer group"
-              >
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    checked={filters.categories.includes(category.value)}
-                    onChange={() => handleCategoryToggle(category.value)}
-                    className="w-4 h-4 opacity-0 absolute"
-                  />
-                  <div 
-                    className="w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200"
-                    style={{
-                      borderColor: filters.categories.includes(category.value) ? 'var(--accent)' : 'var(--border)',
-                      backgroundColor: filters.categories.includes(category.value) ? 'var(--accent)' : 'transparent'
-                    }}
-                  >
-                    {filters.categories.includes(category.value) && (
-                      <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
-                    )}
-                  </div>
-                </div>
-                <span className="text-sm font-suisse" style={{ color: 'var(--text-primary)' }}>
-                  {category.label}
-                </span>
-              </label>
-            ))}
-          </div>
         )}
       </div>
 
-      {/* Active Filters Summary */}
-      {(filters.sources.length > 0 || filters.categories.length > 0 || filters.minSeeds > 0) && (
-        <div className="pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          <h4 className="text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>
-            Active Filters
+      {/* Main Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5">
+        
+        {/* Column 1: Sort Options */}
+        <div className="space-y-1.5">
+          <h4 className="font-heading text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Sort By
           </h4>
-          <div className="space-y-2 text-xs font-suisse" style={{ color: 'var(--text-secondary)' }}>
-            {filters.sources.length > 0 && (
-              <div>Sources: {filters.sources.length} selected</div>
-            )}
-            {filters.categories.length > 0 && (
-              <div>Categories: {filters.categories.length} selected</div>
-            )}
-            {filters.minSeeds > 0 && (
-              <div>Min Seeds: {filters.minSeeds}</div>
-            )}
+          <div className="flex flex-wrap gap-1">
+            {sortOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => handleSortChange(option.value)}
+                className="inline-flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium rounded-md transition-all duration-200 hover:shadow-sm"
+                style={{
+                  backgroundColor: filters.sortBy === option.value ? 'var(--accent)' : 'var(--surface-subtle)',
+                  color: filters.sortBy === option.value ? 'white' : 'var(--text-primary)',
+                  border: filters.sortBy === option.value ? 'none' : '1px solid var(--border)'
+                }}
+              >
+                <span>{option.icon}</span>
+                <span>{option.label}</span>
+              </button>
+            ))}
+          </div>
+
+        </div>
+
+        {/* Column 2: Sources Filter */}
+        {availableSources.length > 0 && (
+          <div className="space-y-1.5">
+            <h4 className="font-heading text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+              Sources ({filters.sources.length}/{availableSources.length})
+            </h4>
+            <div className="flex flex-wrap gap-1">
+              {availableSources.map((source) => {
+                const isSelected = filters.sources.includes(source);
+                return (
+                  <button
+                    key={source}
+                    onClick={() => handleSourceToggle(source)}
+                    className="inline-flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium rounded-md transition-all duration-200 hover:shadow-sm"
+                    style={{
+                      backgroundColor: isSelected ? 'var(--accent-subtle)' : 'var(--surface-subtle)',
+                      color: isSelected ? 'var(--accent)' : 'var(--text-primary)',
+                      border: isSelected ? '1px solid var(--accent)' : '1px solid transparent'
+                    }}
+                  >
+                    <span>{source}</span>
+                    {isSelected && (
+                      <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--accent)' }}>
+                        <Check className="w-2 h-2 text-white" strokeWidth={3} />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Column 3: Categories Filter */}
+        <div className="space-y-1.5">
+          <h4 className="font-heading text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Categories ({filters.categories.length}/{categories.length})
+          </h4>
+          <div className="flex flex-wrap gap-1">
+            {categories.map((category) => {
+              const isSelected = filters.categories.includes(category.value);
+              return (
+                <button
+                  key={category.value}
+                  onClick={() => handleCategoryToggle(category.value)}
+                  className="inline-flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium rounded-md transition-all duration-200 hover:shadow-sm"
+                  style={{
+                    backgroundColor: isSelected ? 'var(--accent)' : 'var(--surface-subtle)',
+                    color: isSelected ? 'white' : 'var(--text-primary)',
+                    border: isSelected ? 'none' : '1px solid var(--border)'
+                  }}
+                >
+                  <span>{category.emoji}</span>
+                  <span>{category.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Minimum Seeds */}
+          <div className="space-y-1.5 mt-2">
+            <h4 className="font-heading text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+              Minimum Seeds
+            </h4>
+            <div className="relative">
+              <input
+                type="number"
+                min="0"
+                value={filters.minSeeds === 0 ? '' : filters.minSeeds}
+                onChange={(e) => handleMinSeedsChange(e.target.value)}
+                className="w-full pl-2.5 pr-12 py-1.5 rounded-md text-xs font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-50 border"
+                style={{
+                  backgroundColor: 'var(--surface)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border)',
+                  '--tw-ring-color': 'var(--accent)'
+                } as React.CSSProperties}
+                placeholder="Enter minimum seeds"
+              />
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium pointer-events-none" style={{ color: 'var(--text-subtle)' }}>
+                seeds
+              </div>
+            </div>
           </div>
         </div>
-      )}
+
+      </div>
+
+
     </div>
   );
 }
