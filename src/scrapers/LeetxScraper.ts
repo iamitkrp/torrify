@@ -1,7 +1,12 @@
 import { BaseScraperClass } from './BaseScraper';
 import { ScraperConfig } from '@/types';
-import { chromium, Browser, Page } from 'playwright';
 import * as cheerio from 'cheerio';
+
+// Dynamic Playwright imports for Vercel compatibility
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type Browser = any;
+type Page = any;
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export class LeetxScraper extends BaseScraperClass {
   private browser: Browser | null = null;
@@ -14,6 +19,14 @@ export class LeetxScraper extends BaseScraperClass {
     let page: Page | null = null;
     
     try {
+      // Check if Playwright is available (not on Vercel)
+      if (process.env.VERCEL || !this.config.usePlaywright) {
+        throw this.createError('NETWORK_ERROR', '1337x scraper requires Playwright which is not available in this environment', {});
+      }
+
+      // Dynamic import of Playwright
+      const { chromium } = await import('playwright');
+
       // Initialize browser if needed
       if (!this.browser) {
         this.browser = await chromium.launch({
@@ -132,6 +145,14 @@ export class LeetxScraper extends BaseScraperClass {
     let page: Page | null = null;
     
     try {
+      // Check if Playwright is available
+      if (process.env.VERCEL || !this.config.usePlaywright) {
+        return ''; // Return empty string if Playwright not available
+      }
+
+      // Dynamic import of Playwright
+      const { chromium } = await import('playwright');
+
       if (!this.browser) {
         this.browser = await chromium.launch({
           headless: true,

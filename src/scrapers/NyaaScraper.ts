@@ -1,7 +1,12 @@
 import { BaseScraperClass } from './BaseScraper';
 import { ScraperConfig } from '@/types';
-import { chromium, Browser, Page } from 'playwright';
 import * as cheerio from 'cheerio';
+
+// Dynamic Playwright imports for Vercel compatibility
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type Browser = any;
+type Page = any;
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export class NyaaScraper extends BaseScraperClass {
   private browser: Browser | null = null;
@@ -10,7 +15,62 @@ export class NyaaScraper extends BaseScraperClass {
     super(config);
   }
 
+  /**
+   * HTTP-only fallback method for Vercel environment
+   */
+  private async performHttpSearch(query: string, limit: number = 50): Promise<Record<string, unknown>[]> {
+    try {
+      await this.applyRateLimit();
+      
+      const searchUrl = this.buildSearchUrl(query);
+      const response = await this.axiosInstance.get(searchUrl);
+      
+      const $ = cheerio.load(response.data);
+      const results: Record<string, unknown>[] = [];
+      
+      $('tbody tr').each((index, element) => {
+        if (results.length >= limit) return false;
+        
+        const $row = $(element);
+        const $columns = $row.find('td');
+        
+        if ($columns.length >= 4) {
+          const title = $columns.eq(1).find('a').last().text().trim();
+          const magnetLink = $columns.eq(2).find('a[href^="magnet:"]').attr('href') || '';
+          const size = $columns.eq(3).text().trim();
+          const seeds = parseInt($columns.eq(5).text().trim()) || 0;
+          const leechers = parseInt($columns.eq(6).text().trim()) || 0;
+          const uploadDate = $columns.eq(4).text().trim();
+          
+          if (title && magnetLink) {
+            results.push({
+              title,
+              magnetLink,
+              size,
+              seeds,
+              leechers,
+              uploadDate,
+              link: searchUrl,
+              category: 'anime'
+            });
+          }
+        }
+      });
+      
+      return results;
+    } catch (error) {
+      console.error('[Nyaa HTTP] Search failed:', error);
+      throw this.createError('NETWORK_ERROR', 'Failed to search Nyaa via HTTP', error);
+    }
+  }
+
     protected async performSearch(query: string, limit: number = 50): Promise<Record<string, unknown>[]> {
+    // Check if Playwright is available (not on Vercel)
+    if (process.env.VERCEL || !this.config.usePlaywright) {
+      // Fallback to HTTP-only scraping for Nyaa
+      return this.performHttpSearch(query, limit);
+    }
+
     let page: Page | null = null;
     
     // Try multiple Nyaa mirrors if main site fails
@@ -22,6 +82,9 @@ export class NyaaScraper extends BaseScraperClass {
 
     for (const baseUrl of fallbackMirrors) {
       try {
+        // Dynamic import of Playwright
+        const { chromium } = await import('playwright');
+
         // Initialize browser if needed
         if (!this.browser) {
           this.browser = await chromium.launch({

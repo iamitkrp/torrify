@@ -72,8 +72,9 @@ The deployment includes:
 - ✅ **Edge Runtime**: Optimized for global performance
 - ✅ **Automatic CDN**: Static assets cached globally
 - ✅ **Function Optimization**: 1GB memory, 30s timeout
-- ✅ **Playwright Support**: Browser automation ready
+- ✅ **Vercel Compatibility**: Dynamic Playwright imports with HTTP fallbacks
 - ✅ **Smart Caching**: API responses cached for performance
+- ✅ **Scraper Fallbacks**: HTTP-only scraping when Playwright unavailable
 
 ## Monitoring & Analytics
 
@@ -107,8 +108,10 @@ Check the **Functions** tab in your Vercel Dashboard for:
    - Currently set to 1024MB
 
 4. **Playwright Issues**
-   - Playwright is auto-installed via `vercel.json`
-   - Check function logs for browser errors
+   - Playwright automatically disabled on Vercel
+   - Scrapers fallback to HTTP-only mode
+   - LeetxScraper temporarily disabled (requires Playwright)
+   - Nyaa and RARBG use HTTP fallbacks on Vercel
 
 ### Debug Deployment
 ```bash

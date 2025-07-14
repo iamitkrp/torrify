@@ -1,7 +1,12 @@
 import { BaseScraperClass } from './BaseScraper';
 import { ScraperConfig } from '@/types';
-import { chromium, Browser, Page } from 'playwright';
 import * as cheerio from 'cheerio';
+
+// Dynamic Playwright imports for Vercel compatibility
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type Browser = any;
+type Page = any;
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export class RarbgScraper extends BaseScraperClass {
   private browser: Browser | null = null;
@@ -10,7 +15,58 @@ export class RarbgScraper extends BaseScraperClass {
     super(config);
   }
 
+  /**
+   * HTTP-only fallback method for Vercel environment
+   */
+  private async performHttpSearch(query: string, limit: number = 50): Promise<Record<string, unknown>[]> {
+    try {
+      await this.applyRateLimit();
+      
+      // Use a simple working RARBG mirror for HTTP requests
+      const searchUrl = `https://rargb.to/search/?search=${encodeURIComponent(query)}`;
+      const response = await this.axiosInstance.get(searchUrl);
+      
+      const $ = cheerio.load(response.data);
+      const results: Record<string, unknown>[] = [];
+      
+      $('.lista2t tr').each((index, element) => {
+        if (results.length >= limit) return false;
+        
+        const $row = $(element);
+        const title = $row.find('td:nth-child(2) a[title]').attr('title')?.trim();
+        const size = $row.find('td:nth-child(4)').text().trim();
+        const seeds = parseInt($row.find('td:nth-child(5)').text().trim()) || 0;
+        const leechers = parseInt($row.find('td:nth-child(6)').text().trim()) || 0;
+        const uploadDate = $row.find('td:nth-child(3)').text().trim();
+        
+        if (title) {
+          results.push({
+            title,
+            magnetLink: '', // RARBG requires detail page visit for magnet links
+            size,
+            seeds,
+            leechers,
+            uploadDate,
+            link: searchUrl,
+            category: 'movies'
+          });
+        }
+      });
+      
+      return results;
+    } catch (error) {
+      console.error('[RARBG HTTP] Search failed:', error);
+      throw this.createError('NETWORK_ERROR', 'Failed to search RARBG via HTTP', error);
+    }
+  }
+
   protected async performSearch(query: string, limit: number = 50): Promise<Record<string, unknown>[]> {
+    // Check if Playwright is available (not on Vercel)
+    if (process.env.VERCEL || !this.config.usePlaywright) {
+      // Fallback to HTTP-only scraping for RARBG
+      return this.performHttpSearch(query, limit);
+    }
+
     let page: Page | null = null;
     
     // Try multiple RARBG mirrors/clones since the original shut down
@@ -24,6 +80,9 @@ export class RarbgScraper extends BaseScraperClass {
 
     for (const baseUrl of fallbackMirrors) {
       try {
+        // Dynamic import of Playwright
+        const { chromium } = await import('playwright');
+
         // Initialize browser if needed
         if (!this.browser) {
           this.browser = await chromium.launch({

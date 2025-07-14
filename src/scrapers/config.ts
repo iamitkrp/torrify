@@ -22,7 +22,7 @@ export const SCRAPER_CONFIGS: Record<string, ScraperConfig> = {
     timeout: DEFAULT_TIMEOUT * 1.2, // Give 1337x more time
     userAgent: DEFAULT_USER_AGENT,
     enabled: false, // Temporarily disable due to parsing issues
-    usePlaywright: true, // 1337x has more dynamic content
+    usePlaywright: process.env.VERCEL ? false : true, // Disable Playwright on Vercel, enable locally
     rateLimit: DEFAULT_RATE_LIMIT * 1.5, // Slightly higher rate limit
   },
   yts: {
