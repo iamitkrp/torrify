@@ -35,9 +35,6 @@ export type SortOption = 'seeds' | 'leechers' | 'size' | 'date' | 'health';
 
 // Filter options
 export interface FilterOptions {
-  sources: string[];
-  minSeeds: number;
-  maxSize?: string;
   categories: string[];
   sortBy: SortOption;
   sortOrder: 'asc' | 'desc';
@@ -102,7 +99,6 @@ export interface TorrentCardProps {
 export interface FilterPanelProps {
   filters: FilterOptions;
   onFiltersChange: (filters: FilterOptions) => void;
-  availableSources: string[];
 }
 
 // Loading states

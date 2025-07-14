@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get('q') || '';
     const sources = searchParams.get('sources')?.split(',') || [];
     const category = searchParams.get('category') || 'all';
-    const sortBy = (searchParams.get('sortBy') || 'seeds') as 'seeds' | 'leechers' | 'size' | 'date' | 'title';
+    const sortBy = (searchParams.get('sortBy') || 'seeds') as 'seeds' | 'leechers' | 'size' | 'date' | 'health';
     const limit = parseInt(searchParams.get('limit') || '50');
 
     // Validate query

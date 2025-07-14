@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { SearchResponse, TorrentResult, FilterOptions } from '@/types';
-import { sortTorrents, filterTorrents, groupTorrentsBySource } from '@/lib/utils';
+import { sortTorrents, filterTorrents } from '@/lib/utils';
 import SearchBar from '@/components/SearchBar';
 import TorrentCard from '@/components/TorrentCard';
 import FilterPanel from '@/components/FilterPanel';
@@ -24,8 +24,6 @@ function MobileSearchResults() {
   
   const query = searchParams.get('q') || '';
   const [filters, setFilters] = useState<FilterOptions>({
-    sources: [],
-    minSeeds: 0,
     categories: [],
     sortBy: 'seeds',
     sortOrder: 'desc',
@@ -355,11 +353,10 @@ function MobileSearchResults() {
                 <ArrowLeft className="h-4 w-4" />
               </button>
             </div>
-            <div className="p-2">
+            <div className="p-4">
               <FilterPanel
                 filters={filters}
                 onFiltersChange={setFilters}
-                availableSources={availableSources}
               />
             </div>
           </div>
@@ -386,8 +383,6 @@ function DesktopSearchResults() {
   
   const query = searchParams.get('q') || '';
   const [filters, setFilters] = useState<FilterOptions>({
-    sources: [],
-    minSeeds: 0,
     categories: [],
     sortBy: 'seeds',
     sortOrder: 'desc',
@@ -496,7 +491,6 @@ function DesktopSearchResults() {
   }, [query]);
 
   const availableSources = searchData?.sources?.map(s => s.source) || [];
-  const groupedResults = groupTorrentsBySource(filteredResults);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
@@ -699,11 +693,10 @@ function DesktopSearchResults() {
                     <ArrowLeft className="h-4 w-4" />
                   </button>
                 </div>
-                <div className="p-2">
+                <div className="p-4">
                   <FilterPanel
                     filters={filters}
                     onFiltersChange={setFilters}
-                    availableSources={availableSources}
                   />
                 </div>
               </div>

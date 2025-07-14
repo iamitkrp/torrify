@@ -126,8 +126,11 @@ export function sortTorrents(
       case 'date':
         comparison = parseDate(a.uploadDate).getTime() - parseDate(b.uploadDate).getTime();
         break;
-      case 'title':
-        comparison = a.title.localeCompare(b.title);
+      case 'health':
+        // Health is calculated as ratio of seeds to leechers
+        const healthA = a.leechers > 0 ? a.seeds / a.leechers : a.seeds;
+        const healthB = b.leechers > 0 ? b.seeds / b.leechers : b.seeds;
+        comparison = healthA - healthB;
         break;
       default:
         comparison = a.seeds - b.seeds; // Default to seeds
@@ -147,25 +150,6 @@ export function filterTorrents(
   filters: FilterOptions
 ): TorrentResult[] {
   return torrents.filter((torrent) => {
-    // Filter by sources
-    if (filters.sources.length > 0 && !filters.sources.includes(torrent.source)) {
-      return false;
-    }
-
-    // Filter by minimum seeds
-    if (torrent.seeds < filters.minSeeds) {
-      return false;
-    }
-
-    // Filter by maximum size
-    if (filters.maxSize) {
-      const maxBytes = parseSizeToBytes(filters.maxSize);
-      const torrentBytes = parseSizeToBytes(torrent.size);
-      if (torrentBytes > maxBytes) {
-        return false;
-      }
-    }
-
     // Filter by categories (if specified and torrent has category)
     if (filters.categories.length > 0 && torrent.category) {
       if (!filters.categories.includes(torrent.category)) {
