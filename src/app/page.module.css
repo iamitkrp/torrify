@@ -1,4 +1,4 @@
-/* Landing Page Styles - Matching User's Design */
+/* Landing Page Styles - AMOLED Optimized */
 
 /* === HEADER === */
 .header {
@@ -7,10 +7,10 @@
   left: 0;
   right: 0;
   z-index: 50;
-  background: rgba(16, 22, 34, 0.7);
+  background: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(35, 47, 72, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .headerContent {
@@ -47,7 +47,7 @@
 }
 
 .brand:hover .brandIcon {
-  border-color: rgba(43, 108, 238, 0.5);
+  border-color: rgba(59, 130, 246, 0.5);
 }
 
 .brandIcon svg {
@@ -121,7 +121,7 @@
 
 .githubBtn:hover {
   background: var(--bg-surface);
-  border-color: rgba(43, 108, 238, 0.3);
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
 .githubBtn:hover svg {
@@ -173,7 +173,7 @@
   transform: translate(-50%, -50%);
   width: 600px;
   height: 600px;
-  background: rgba(43, 108, 238, 0.05);
+  background: rgba(59, 130, 246, 0.03);
   border-radius: 50%;
   filter: blur(120px);
   pointer-events: none;
@@ -274,7 +274,7 @@
 
 .searchWrapper:focus-within .searchBar {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px rgba(43, 108, 238, 0.2);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .searchIcon {
@@ -307,7 +307,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  box-shadow: 0 10px 15px -3px rgba(43, 108, 238, 0.2);
+  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
 }
 
 .searchBtn:hover {
@@ -340,8 +340,8 @@
 
 .chip:hover {
   color: var(--text-primary);
-  border-color: rgba(43, 108, 238, 0.5);
-  background: rgba(25, 34, 51, 0.8);
+  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(10, 10, 10, 0.9);
   transform: scale(1.05);
 }
 
@@ -455,7 +455,7 @@
 }
 
 .footerDivider {
-  color: #334155;
+  color: #27272a;
   display: none;
 }
 
@@ -469,7 +469,7 @@
 }
 
 .footerSeparator {
-  color: #334155;
+  color: #27272a;
 }
 
 .statusBadge {

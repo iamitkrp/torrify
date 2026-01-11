@@ -1,24 +1,24 @@
 /* Torrify - Global Design System */
-/* Custom design based on user's UI/UX mockup */
+/* AMOLED-optimized dark theme with true blacks */
 
 /* === CSS CUSTOM PROPERTIES === */
 :root {
-  /* Colors - Deep Navy Theme */
-  --bg-primary: #101622;
-  --bg-secondary: #0d111a;
-  --bg-surface: #192233;
-  --bg-glass: rgba(16, 22, 34, 0.7);
+  /* Colors - AMOLED Black Theme (True Black) */
+  --bg-primary: #000000;
+  --bg-secondary: #000000;
+  --bg-surface: #0a0a0a;
+  --bg-glass: rgba(0, 0, 0, 0.9);
 
   /* Accent Colors */
-  --accent-primary: #2b6cee;
-  --accent-primary-hover: #3b7cf8;
-  --accent-green: #00ff9d;
-  --accent-gradient: linear-gradient(180deg, #ffffff 0%, #64748b 100%);
+  --accent-primary: #3b82f6;
+  --accent-primary-hover: #60a5fa;
+  --accent-green: #22c55e;
+  --accent-gradient: linear-gradient(180deg, #ffffff 0%, #6b7280 100%);
 
   /* Text Colors */
   --text-primary: #ffffff;
-  --text-secondary: #94a3b8;
-  --text-muted: #475569;
+  --text-secondary: #a1a1aa;
+  --text-muted: #52525b;
 
   /* Status Colors */
   --success: #22c55e;
@@ -28,8 +28,8 @@
   --leechers: #ef4444;
 
   /* Borders */
-  --border-color: #232f48;
-  --border-hover: rgba(43, 108, 238, 0.5);
+  --border-color: #1a1a1a;
+  --border-hover: rgba(59, 130, 246, 0.5);
 
   /* Spacing */
   --spacing-xs: 0.25rem;
