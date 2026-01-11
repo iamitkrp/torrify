@@ -1,4 +1,4 @@
-/* Landing Page - Ultra Minimal AMOLED Design */
+/* Landing Page - Ultra Minimal Design */
 
 .main {
   min-height: 100vh;
@@ -8,18 +8,94 @@
   justify-content: center;
   position: relative;
   padding: 2rem;
+  transition: background-color 0.3s ease;
+}
+
+.main.dark {
   background: #000000;
 }
 
-.backgroundGlow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 800px;
-  height: 800px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.04) 0%, transparent 70%);
+.main.light {
+  background: #ffffff;
+}
+
+/* Theme Toggle */
+.themeToggle {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.dark .themeToggle {
+  background: #171717;
+  color: #fbbf24;
+  border: 1px solid #262626;
+}
+
+.dark .themeToggle:hover {
+  background: #262626;
+  border-color: #3b82f6;
+}
+
+.light .themeToggle {
+  background: #f5f5f5;
+  color: #6366f1;
+  border: 1px solid #e5e5e5;
+}
+
+.light .themeToggle:hover {
+  background: #e5e5e5;
+}
+
+/* Theme Transition Overlay - Circular Reveal */
+.themeOverlay {
+  position: fixed;
+  bottom: -50vmax;
+  right: -50vmax;
+  width: 1px;
+  height: 1px;
+  border-radius: 50%;
+  z-index: 99;
   pointer-events: none;
+  transform: scale(0);
+  transition: none;
+}
+
+.overlayLight {
+  background: #ffffff;
+}
+
+.overlayDark {
+  background: #000000;
+}
+
+.themeOverlay.expanding {
+  animation: circleExpand 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes circleExpand {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(300);
+    opacity: 0;
+  }
 }
 
 .content {
@@ -30,56 +106,64 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
 }
 
-/* Logo - Stylized Text */
+/* Logo Wrapper - prevents clipping */
+.logoWrapper {
+  padding: 0 0 1.5rem 0;
+}
+
+/* Logo - Vibrant Gradient Text */
 .logo {
-  font-size: clamp(3.5rem, 12vw, 6rem);
-  font-weight: 800;
-  letter-spacing: -0.06em;
-  color: #ffffff;
-  font-style: italic;
+  font-size: clamp(4rem, 14vw, 7rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
   text-transform: lowercase;
   margin: 0;
-  line-height: 1;
-  background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+  color: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 40px rgba(255, 255, 255, 0.1));
 }
 
 /* Subtitle */
 .subtitle {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 400;
-  color: #52525b;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.15em;
   text-transform: lowercase;
   margin: 0;
-  margin-bottom: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.dark .subtitle {
+  color: #525252;
+}
+
+.light .subtitle {
+  color: #a3a3a3;
 }
 
 /* Search Bar */
 .searchWrapper {
   position: relative;
   width: 100%;
-  max-width: 500px;
+  max-width: 480px;
 }
 
 .searchGlow {
   position: absolute;
-  inset: -2px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3));
+  inset: -1px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   border-radius: 9999px;
-  filter: blur(20px);
   opacity: 0;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.3s ease;
 }
 
 .searchWrapper:focus-within .searchGlow {
-  opacity: 1;
+  opacity: 0.5;
+  filter: blur(8px);
 }
 
 .searchBar {
@@ -87,12 +171,20 @@
   display: flex;
   align-items: center;
   width: 100%;
-  height: 3.5rem;
-  background: #0a0a0a;
-  border: 1px solid #1a1a1a;
+  height: 3.25rem;
   border-radius: 9999px;
   transition: all 0.3s ease;
   overflow: hidden;
+}
+
+.dark .searchBar {
+  background: #0a0a0a;
+  border: 1px solid #262626;
+}
+
+.light .searchBar {
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
 }
 
 .searchWrapper:focus-within .searchBar {
@@ -100,10 +192,17 @@
 }
 
 .searchIcon {
-  padding-left: 1.5rem;
-  color: #52525b;
+  padding-left: 1.25rem;
   display: flex;
   align-items: center;
+}
+
+.dark .searchIcon {
+  color: #404040;
+}
+
+.light .searchIcon {
+  color: #a3a3a3;
 }
 
 .searchInput {
@@ -111,21 +210,32 @@
   height: 100%;
   padding: 0 1rem;
   background: transparent;
-  color: #ffffff;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 400;
 }
 
-.searchInput::placeholder {
-  color: #3f3f46;
+.dark .searchInput {
+  color: #ffffff;
+}
+
+.dark .searchInput::placeholder {
+  color: #404040;
+}
+
+.light .searchInput {
+  color: #171717;
+}
+
+.light .searchInput::placeholder {
+  color: #a3a3a3;
 }
 
 .searchBtn {
-  margin-right: 0.5rem;
-  width: 2.5rem;
-  height: 2.5rem;
+  margin-right: 0.375rem;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: 50%;
-  background: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -134,8 +244,8 @@
 }
 
 .searchBtn:hover {
-  background: #60a5fa;
-  transform: scale(1.05);
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
 }
 
 .searchBtn:active {
@@ -149,7 +259,8 @@
   }
 
   .subtitle {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
+    margin-bottom: 1.5rem;
   }
 
   .searchBar {
