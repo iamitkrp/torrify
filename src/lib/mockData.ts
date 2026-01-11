@@ -19,7 +19,7 @@ const randomDate = () => {
 };
 
 // Mock torrent data
-export const mockTorrents: Torrent[] = [
+const mockTorrentData = [
     {
         id: '1',
         name: 'Dune.Part.Two.2024.2160p.UHD.BluRay.x265.HDR.DTS-HD.MA.7.1-RARBG',
@@ -27,7 +27,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 2847,
         leechers: 423,
         uploadDate: '2024-12-28T14:30:00Z',
-        category: 'movies',
+        category: 'movies' as TorrentCategory,
         hash: generateHash(),
         source: 'RARBG',
         uploader: 'SceneRelease',
@@ -45,7 +45,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 4521,
         leechers: 892,
         uploadDate: '2024-12-30T09:15:00Z',
-        category: 'tv',
+        category: 'tv' as TorrentCategory,
         hash: generateHash(),
         source: 'NTb',
         uploader: 'WebRips',
@@ -68,7 +68,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 1892,
         leechers: 567,
         uploadDate: '2024-12-15T20:45:00Z',
-        category: 'games',
+        category: 'games' as TorrentCategory,
         hash: generateHash(),
         source: 'FitGirl',
         uploader: 'FitGirl',
@@ -82,7 +82,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 3421,
         leechers: 1234,
         uploadDate: '2024-12-20T16:00:00Z',
-        category: 'software',
+        category: 'software' as TorrentCategory,
         hash: generateHash(),
         source: 'm0nkrus',
         uploader: 'SoftArchive',
@@ -95,7 +95,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 892,
         leechers: 234,
         uploadDate: '2024-12-25T12:00:00Z',
-        category: 'music',
+        category: 'music' as TorrentCategory,
         hash: generateHash(),
         source: 'MusiQ',
         uploader: 'AudioPhile',
@@ -108,7 +108,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 2156,
         leechers: 456,
         uploadDate: '2024-12-10T08:30:00Z',
-        category: 'anime',
+        category: 'anime' as TorrentCategory,
         hash: generateHash(),
         source: 'Judas',
         uploader: 'AnimeWorld',
@@ -121,7 +121,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 567,
         leechers: 89,
         uploadDate: '2024-12-18T14:20:00Z',
-        category: 'books',
+        category: 'books' as TorrentCategory,
         hash: generateHash(),
         source: 'LibGen',
         uploader: 'BookWorm',
@@ -134,7 +134,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 3892,
         leechers: 521,
         uploadDate: '2024-11-28T10:00:00Z',
-        category: 'movies',
+        category: 'movies' as TorrentCategory,
         hash: generateHash(),
         source: 'RARBG',
         uploader: 'SceneRelease',
@@ -147,7 +147,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 1234,
         leechers: 345,
         uploadDate: '2024-11-15T18:45:00Z',
-        category: 'tv',
+        category: 'tv' as TorrentCategory,
         hash: generateHash(),
         source: 'FGT',
         uploader: 'QualityEncode',
@@ -160,7 +160,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 8921,
         leechers: 4567,
         uploadDate: '2024-12-31T00:00:00Z',
-        category: 'games',
+        category: 'games' as TorrentCategory,
         hash: generateHash(),
         source: 'RELOADED',
         uploader: 'SceneGames',
@@ -173,7 +173,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 4521,
         leechers: 892,
         uploadDate: '2024-12-22T20:30:00Z',
-        category: 'software',
+        category: 'software' as TorrentCategory,
         hash: generateHash(),
         source: 'MSDN',
         uploader: 'TechUpload',
@@ -186,7 +186,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 1567,
         leechers: 234,
         uploadDate: '2024-12-19T16:15:00Z',
-        category: 'music',
+        category: 'music' as TorrentCategory,
         hash: generateHash(),
         source: 'Deezloader',
         uploader: 'HipHopHead',
@@ -199,7 +199,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 3421,
         leechers: 567,
         uploadDate: '2024-12-29T14:00:00Z',
-        category: 'anime',
+        category: 'anime' as TorrentCategory,
         hash: generateHash(),
         source: 'SubsPlease',
         uploader: 'AnimeHaven',
@@ -212,7 +212,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 892,
         leechers: 123,
         uploadDate: '2024-12-24T11:30:00Z',
-        category: 'books',
+        category: 'books' as TorrentCategory,
         hash: generateHash(),
         source: 'Audible',
         uploader: 'AudioBooks',
@@ -225,7 +225,7 @@ export const mockTorrents: Torrent[] = [
         seeders: 2156,
         leechers: 345,
         uploadDate: '2024-11-20T09:00:00Z',
-        category: 'movies',
+        category: 'movies' as TorrentCategory,
         hash: generateHash(),
         source: 'FGT',
         uploader: 'HDEncode',
@@ -235,6 +235,8 @@ export const mockTorrents: Torrent[] = [
     ...t,
     magnetLink: generateMagnetLink(t.hash, t.name)
 }));
+
+export const mockTorrents: Torrent[] = mockTorrentData;
 
 // Generate more torrents for search results
 export const generateMoreTorrents = (category: TorrentCategory | 'all', count: number = 20): Torrent[] => {
