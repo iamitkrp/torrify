@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Torrify - Decentralized Search</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b6cee",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "accent-blue": "#2b6cee",
+                        "accent-green": "#00ff9d",
+                        "surface-dark": "#192233",
+                        "border-dark": "#232f48"
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "sans": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Utilities for High-End Feel */
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .glass-effect {
+            background: rgba(16, 22, 34, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .magnet-hover:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Large typography refinements */
+        .display-text {
+            line-height: 1.1;
+            letter-spacing: -0.04em;
+        }
+
+        /* Custom Scrollbar for sleekness */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #101622;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #232f48;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2b6cee;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white transition-colors duration-300 min-h-screen flex flex-col overflow-x-hidden">
+<!-- Header -->
+<header class="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-border-dark/50">
+<div class="max-w-[1440px] mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
+<!-- Brand -->
+<div class="flex items-center gap-3 group cursor-pointer">
+<div class="relative flex items-center justify-center size-10 rounded-full bg-surface-dark border border-border-dark group-hover:border-primary/50 transition-colors">
+<span class="material-symbols-outlined text-primary text-2xl group-hover:animate-pulse">all_inclusive</span>
+</div>
+<h2 class="text-xl md:text-2xl font-bold tracking-tight text-white group-hover:text-primary transition-colors">Torrify</h2>
+</div>
+<!-- Desktop Nav -->
+<nav class="hidden md:flex items-center gap-10">
+<a class="text-slate-400 hover:text-white text-sm font-medium transition-colors relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-[-4px] after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left" href="#">Discover</a>
+<a class="text-slate-400 hover:text-white text-sm font-medium transition-colors relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-[-4px] after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left" href="#">Top 100</a>
+<a class="text-slate-400 hover:text-white text-sm font-medium transition-colors relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-[-4px] after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left" href="#">Upload</a>
+</nav>
+<!-- CTA -->
+<div class="flex items-center gap-4">
+<a class="hidden sm:flex items-center gap-2 px-6 py-2.5 rounded-full border border-border-dark bg-transparent hover:bg-surface-dark hover:border-primary/30 transition-all group" href="#">
+<span class="material-symbols-outlined text-lg text-slate-400 group-hover:text-white transition-colors">code</span>
+<span class="text-sm font-bold text-white">GitHub</span>
+</a>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex flex-col items-center justify-center relative pt-20 px-4">
+<!-- Abstract Background Glow -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+<div class="relative z-10 w-full max-w-[1024px] flex flex-col items-center gap-12 md:gap-16 py-12 md:py-20">
+<!-- Hero Text -->
+<div class="flex flex-col gap-6 text-center animate-float">
+<h1 class="display-text text-5xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-500 pb-2">
+                    Search the <br class="hidden md:block"/> Decentralized Web.
+                </h1>
+<p class="text-slate-400 text-base md:text-lg font-normal tracking-wide max-w-2xl mx-auto">
+                    Privacy-focused. DHT-powered. Verified integrity. The next generation of peer-to-peer discovery.
+                </p>
+</div>
+<!-- Search Component -->
+<div class="w-full max-w-[720px] relative group/search">
+<div class="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-full blur opacity-20 group-hover/search:opacity-40 transition duration-500"></div>
+<div class="relative flex items-center w-full h-16 md:h-20 bg-surface-dark border border-border-dark rounded-full shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary overflow-hidden">
+<div class="pl-8 text-slate-500">
+<span class="material-symbols-outlined text-2xl">search</span>
+</div>
+<input class="w-full h-full bg-transparent border-none text-white text-lg md:text-xl placeholder:text-slate-600 focus:ring-0 px-6 font-medium" placeholder="What are you looking for?" type="text"/>
+<div class="pr-3">
+<button class="size-10 md:size-14 rounded-full bg-primary hover:bg-blue-600 text-white flex items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-900/20">
+<span class="material-symbols-outlined text-2xl md:text-3xl">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Categories Chips -->
+<div class="flex flex-wrap justify-center gap-3 md:gap-4 px-4">
+<button class="magnet-hover px-6 py-2.5 rounded-full bg-surface-dark border border-border-dark text-slate-300 hover:text-white hover:border-primary/50 hover:bg-surface-dark/80 text-sm font-medium transition-all duration-300">
+                    Movies
+                </button>
+<button class="magnet-hover px-6 py-2.5 rounded-full bg-surface-dark border border-border-dark text-slate-300 hover:text-white hover:border-primary/50 hover:bg-surface-dark/80 text-sm font-medium transition-all duration-300">
+                    Music
+                </button>
+<button class="magnet-hover px-6 py-2.5 rounded-full bg-surface-dark border border-border-dark text-slate-300 hover:text-white hover:border-primary/50 hover:bg-surface-dark/80 text-sm font-medium transition-all duration-300">
+                    Software
+                </button>
+<button class="magnet-hover px-6 py-2.5 rounded-full bg-surface-dark border border-border-dark text-slate-300 hover:text-white hover:border-primary/50 hover:bg-surface-dark/80 text-sm font-medium transition-all duration-300">
+                    Games
+                </button>
+<button class="magnet-hover px-6 py-2.5 rounded-full bg-surface-dark border border-border-dark text-slate-300 hover:text-white hover:border-primary/50 hover:bg-surface-dark/80 text-sm font-medium transition-all duration-300">
+                    Books
+                </button>
+</div>
+<!-- Trending Ticker -->
+<div class="w-full max-w-3xl overflow-hidden mt-8 border-t border-b border-white/5 py-4 relative">
+<div class="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background-dark to-transparent z-10"></div>
+<div class="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background-dark to-transparent z-10"></div>
+<div class="flex items-center gap-4 animate-pulse-slow whitespace-nowrap justify-center">
+<span class="text-primary font-bold text-sm tracking-wider uppercase">Trending Now</span>
+<span class="w-1 h-1 rounded-full bg-slate-600"></span>
+<span class="text-slate-400 text-sm hover:text-white cursor-pointer transition-colors">Ubuntu 24.04</span>
+<span class="text-slate-600 text-sm">•</span>
+<span class="text-slate-400 text-sm hover:text-white cursor-pointer transition-colors">Kali Linux 2024.1</span>
+<span class="text-slate-600 text-sm">•</span>
+<span class="text-slate-400 text-sm hover:text-white cursor-pointer transition-colors">Blender 4.2 LTS</span>
+<span class="text-slate-600 text-sm">•</span>
+<span class="text-slate-400 text-sm hover:text-white cursor-pointer transition-colors">Arch Linux ISO</span>
+<span class="text-slate-600 text-sm">•</span>
+<span class="text-slate-400 text-sm hover:text-white cursor-pointer transition-colors">GIMP 3.0 RC</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="border-t border-border-dark bg-background-dark mt-auto">
+<div class="max-w-[1440px] mx-auto px-6 md:px-10 py-8 flex flex-col md:flex-row items-center justify-between gap-6">
+<div class="flex items-center gap-2 text-slate-500 text-sm">
+<span>© 2024 Torrify.</span>
+<span class="hidden md:inline text-slate-700">|</span>
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<span class="text-slate-700">•</span>
+<a class="hover:text-primary transition-colors" href="#">DMCA</a>
+<span class="text-slate-700">•</span>
+<a class="hover:text-primary transition-colors" href="#">Terms</a>
+</div>
+<div class="flex items-center gap-3 px-4 py-2 rounded-full bg-surface-dark border border-white/5 shadow-inner">
+<div class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-green opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent-green"></span>
+</div>
+<span class="text-xs font-mono text-slate-300 tracking-wide uppercase">System Operational</span>
+</div>
+</div>
+</footer>
+</body></html>

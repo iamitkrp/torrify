@@ -1,127 +1,190 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Zap, ArrowRight, TrendingUp } from 'lucide-react';
-import SearchBar from '@/components/SearchBar';
-import CategoryCard from '@/components/CategoryCard';
-import TorrentCard from '@/components/TorrentCard';
-import TorrentModal from '@/components/TorrentModal';
-import Footer from '@/components/Footer';
-import { categories, mockTorrents, stats } from '@/lib/mockData';
-import { Torrent } from '@/lib/types';
+import { Search, ArrowRight, Code, Menu, X } from 'lucide-react';
 import styles from './page.module.css';
 
+// Category chips
+const categories = ['Movies', 'Music', 'Software', 'Games', 'Books'];
+
+// Trending items
+const trendingItems = [
+  'Ubuntu 24.04',
+  'Kali Linux 2024.1',
+  'Blender 4.2 LTS',
+  'Arch Linux ISO',
+  'GIMP 3.0 RC'
+];
+
 export default function Home() {
-  const [selectedTorrent, setSelectedTorrent] = useState<Torrent | null>(null);
+  const router = useRouter();
+  const [query, setQuery] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const trendingTorrents = mockTorrents
-    .sort((a, b) => b.seeders - a.seeders)
-    .slice(0, 5);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    }
+  };
 
-  const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M+`;
-    if (num >= 1000) return `${(num / 1000).toFixed(0)}K+`;
-    return num.toString();
+  const handleCategoryClick = (category: string) => {
+    router.push(`/search?category=${category.toLowerCase()}`);
   };
 
   return (
     <>
-      {/* Hero Section */}
-      <section className={styles.hero}>
-        <div className={styles.heroContent}>
-          <div className={styles.badge}>
-            <Zap size={14} />
-            <span>Decentralized & Private</span>
-          </div>
-
-          <h1 className={styles.title}>
-            Search Torrents<br />
-            <span className={styles.highlight}>Across The Globe</span>
-          </h1>
-
-          <p className={styles.subtitle}>
-            The next-generation torrent search engine. Access millions of torrents
-            from {stats.sources}+ sources with lightning-fast results and zero tracking.
-          </p>
-
-          <div className={styles.searchWrapper}>
-            <SearchBar large />
-          </div>
-
-          <div className={styles.stats}>
-            <div className={styles.stat}>
-              <div className={styles.statValue}>{formatNumber(stats.totalTorrents)}</div>
-              <div className={styles.statLabel}>Torrents Indexed</div>
+      {/* Header */}
+      <header className={styles.header}>
+        <div className={styles.headerContent}>
+          {/* Brand */}
+          <Link href="/" className={styles.brand}>
+            <div className={styles.brandIcon}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                <path d="M8 12h8M12 8v8" />
+              </svg>
             </div>
-            <div className={styles.stat}>
-              <div className={styles.statValue}>{formatNumber(stats.activeSeeders)}</div>
-              <div className={styles.statLabel}>Active Seeders</div>
-            </div>
-            <div className={styles.stat}>
-              <div className={styles.statValue}>{stats.sources}+</div>
-              <div className={styles.statLabel}>Sources</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Categories Section */}
-      <section className={styles.categories}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Browse by Category</h2>
-          <p className={styles.sectionSubtitle}>
-            Find exactly what you&apos;re looking for
-          </p>
-        </div>
-
-        <div className={styles.categoryGrid}>
-          {categories.map((category, index) => (
-            <CategoryCard
-              key={category.id}
-              category={category}
-              index={index}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* Trending Section */}
-      <section className={styles.trending}>
-        <div className={styles.trendingHeader}>
-          <div>
-            <h2 className={styles.sectionTitle}>
-              <TrendingUp size={28} style={{ display: 'inline', marginRight: '12px', color: 'var(--accent-primary)' }} />
-              Trending Now
-            </h2>
-            <p className={styles.sectionSubtitle}>Most popular torrents right now</p>
-          </div>
-          <Link href="/search?sort=seeders" className={styles.viewAll}>
-            View All <ArrowRight size={16} />
+            <span className={styles.brandText}>Torrify</span>
           </Link>
+
+          {/* Desktop Nav */}
+          <nav className={styles.nav}>
+            <Link href="/search" className={styles.navLink}>Discover</Link>
+            <Link href="/search?sort=seeders" className={styles.navLink}>Top 100</Link>
+            <Link href="#" className={styles.navLink}>Upload</Link>
+          </nav>
+
+          {/* GitHub Button */}
+          <a
+            href="https://github.com/iamitkrp/torrify"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.githubBtn}
+          >
+            <Code size={18} />
+            <span>GitHub</span>
+          </a>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            className={styles.menuBtn}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
 
-        <div className={styles.trendingList}>
-          {trendingTorrents.map((torrent) => (
-            <TorrentCard
-              key={torrent.id}
-              torrent={torrent}
-              onSelect={setSelectedTorrent}
-            />
-          ))}
+        {/* Mobile Nav */}
+        {mobileMenuOpen && (
+          <nav className={styles.mobileNav}>
+            <Link href="/search" className={styles.mobileNavLink}>Discover</Link>
+            <Link href="/search?sort=seeders" className={styles.mobileNavLink}>Top 100</Link>
+            <Link href="#" className={styles.mobileNavLink}>Upload</Link>
+          </nav>
+        )}
+      </header>
+
+      {/* Main Content */}
+      <main className={styles.main}>
+        {/* Background Glow */}
+        <div className={styles.backgroundGlow} />
+
+        <div className={styles.content}>
+          {/* Hero Text */}
+          <div className={styles.hero}>
+            <h1 className={styles.title}>
+              Search the<br />
+              <span className={styles.titleHighlight}>Decentralized Web.</span>
+            </h1>
+            <p className={styles.subtitle}>
+              Privacy-focused. DHT-powered. Verified integrity. The next generation
+              of peer-to-peer discovery.
+            </p>
+          </div>
+
+          {/* Search Component */}
+          <form className={styles.searchWrapper} onSubmit={handleSearch}>
+            <div className={styles.searchGlow} />
+            <div className={styles.searchBar}>
+              <div className={styles.searchIcon}>
+                <Search size={24} />
+              </div>
+              <input
+                type="text"
+                placeholder="What are you looking for?"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className={styles.searchInput}
+              />
+              <button type="submit" className={styles.searchBtn}>
+                <ArrowRight size={24} />
+              </button>
+            </div>
+          </form>
+
+          {/* Category Chips */}
+          <div className={styles.categories}>
+            {categories.map((category) => (
+              <button
+                key={category}
+                className={styles.chip}
+                onClick={() => handleCategoryClick(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
+          {/* Trending Ticker */}
+          <div className={styles.trending}>
+            <div className={styles.trendingFadeLeft} />
+            <div className={styles.trendingFadeRight} />
+            <div className={styles.trendingContent}>
+              <span className={styles.trendingLabel}>Trending Now</span>
+              <span className={styles.trendingDot} />
+              {trendingItems.map((item, index) => (
+                <React.Fragment key={item}>
+                  <Link
+                    href={`/search?q=${encodeURIComponent(item)}`}
+                    className={styles.trendingItem}
+                  >
+                    {item}
+                  </Link>
+                  {index < trendingItems.length - 1 && (
+                    <span className={styles.trendingSeparator}>•</span>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
         </div>
-      </section>
+      </main>
 
       {/* Footer */}
-      <Footer />
+      <footer className={styles.footer}>
+        <div className={styles.footerContent}>
+          <div className={styles.footerLinks}>
+            <span>© 2024 Torrify.</span>
+            <span className={styles.footerDivider}>|</span>
+            <Link href="#" className={styles.footerLink}>Privacy Policy</Link>
+            <span className={styles.footerSeparator}>•</span>
+            <Link href="#" className={styles.footerLink}>DMCA</Link>
+            <span className={styles.footerSeparator}>•</span>
+            <Link href="#" className={styles.footerLink}>Terms</Link>
+          </div>
 
-      {/* Modal */}
-      {selectedTorrent && (
-        <TorrentModal
-          torrent={selectedTorrent}
-          onClose={() => setSelectedTorrent(null)}
-        />
-      )}
+          <div className={styles.statusBadge}>
+            <div className={styles.statusDot}>
+              <span className={styles.statusPing} />
+              <span className={styles.statusCore} />
+            </div>
+            <span className={styles.statusText}>System Operational</span>
+          </div>
+        </div>
+      </footer>
     </>
   );
 }
