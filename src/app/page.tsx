@@ -1,66 +1,127 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { Zap, ArrowRight, TrendingUp } from 'lucide-react';
+import SearchBar from '@/components/SearchBar';
+import CategoryCard from '@/components/CategoryCard';
+import TorrentCard from '@/components/TorrentCard';
+import TorrentModal from '@/components/TorrentModal';
+import Footer from '@/components/Footer';
+import { categories, mockTorrents, stats } from '@/lib/mockData';
+import { Torrent } from '@/lib/types';
+import styles from './page.module.css';
 
 export default function Home() {
+  const [selectedTorrent, setSelectedTorrent] = useState<Torrent | null>(null);
+
+  const trendingTorrents = mockTorrents
+    .sort((a, b) => b.seeders - a.seeders)
+    .slice(0, 5);
+
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M+`;
+    if (num >= 1000) return `${(num / 1000).toFixed(0)}K+`;
+    return num.toString();
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <>
+      {/* Hero Section */}
+      <section className={styles.hero}>
+        <div className={styles.heroContent}>
+          <div className={styles.badge}>
+            <Zap size={14} />
+            <span>Decentralized & Private</span>
+          </div>
+
+          <h1 className={styles.title}>
+            Search Torrents<br />
+            <span className={styles.highlight}>Across The Globe</span>
+          </h1>
+
+          <p className={styles.subtitle}>
+            The next-generation torrent search engine. Access millions of torrents
+            from {stats.sources}+ sources with lightning-fast results and zero tracking.
+          </p>
+
+          <div className={styles.searchWrapper}>
+            <SearchBar large />
+          </div>
+
+          <div className={styles.stats}>
+            <div className={styles.stat}>
+              <div className={styles.statValue}>{formatNumber(stats.totalTorrents)}</div>
+              <div className={styles.statLabel}>Torrents Indexed</div>
+            </div>
+            <div className={styles.stat}>
+              <div className={styles.statValue}>{formatNumber(stats.activeSeeders)}</div>
+              <div className={styles.statLabel}>Active Seeders</div>
+            </div>
+            <div className={styles.stat}>
+              <div className={styles.statValue}>{stats.sources}+</div>
+              <div className={styles.statLabel}>Sources</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Categories Section */}
+      <section className={styles.categories}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Browse by Category</h2>
+          <p className={styles.sectionSubtitle}>
+            Find exactly what you&apos;re looking for
           </p>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        <div className={styles.categoryGrid}>
+          {categories.map((category, index) => (
+            <CategoryCard
+              key={category.id}
+              category={category}
+              index={index}
             />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          ))}
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* Trending Section */}
+      <section className={styles.trending}>
+        <div className={styles.trendingHeader}>
+          <div>
+            <h2 className={styles.sectionTitle}>
+              <TrendingUp size={28} style={{ display: 'inline', marginRight: '12px', color: 'var(--accent-primary)' }} />
+              Trending Now
+            </h2>
+            <p className={styles.sectionSubtitle}>Most popular torrents right now</p>
+          </div>
+          <Link href="/search?sort=seeders" className={styles.viewAll}>
+            View All <ArrowRight size={16} />
+          </Link>
+        </div>
+
+        <div className={styles.trendingList}>
+          {trendingTorrents.map((torrent) => (
+            <TorrentCard
+              key={torrent.id}
+              torrent={torrent}
+              onSelect={setSelectedTorrent}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <Footer />
+
+      {/* Modal */}
+      {selectedTorrent && (
+        <TorrentModal
+          torrent={selectedTorrent}
+          onClose={() => setSelectedTorrent(null)}
+        />
+      )}
+    </>
   );
 }

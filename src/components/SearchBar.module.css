@@ -1,0 +1,200 @@
+.searchBar {
+    display: flex;
+    gap: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+.searchBar:focus-within {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.1), var(--shadow-glow);
+}
+
+.large {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.large .input {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    padding-left: 52px;
+    font-size: 1.125rem;
+}
+
+.large .submitButton {
+    padding: var(--spacing-lg) var(--spacing-2xl);
+}
+
+.categorySelector {
+    position: relative;
+    border-right: 1px solid var(--border-color);
+}
+
+.categoryButton {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all var(--transition-normal);
+    height: 100%;
+}
+
+.categoryButton:hover {
+    color: var(--accent-primary);
+    background: rgba(0, 212, 255, 0.05);
+}
+
+.categoryText {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rotated {
+    transform: rotate(180deg);
+}
+
+.dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 180px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-sm);
+    z-index: 100;
+    animation: dropdownIn 0.2s ease;
+    box-shadow: var(--shadow-lg);
+}
+
+@keyframes dropdownIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdownItem {
+    display: block;
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    text-align: left;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.dropdownItem:hover {
+    color: var(--text-primary);
+    background: var(--bg-glass);
+}
+
+.dropdownItem.active {
+    color: var(--accent-primary);
+    background: rgba(0, 212, 255, 0.1);
+}
+
+.inputWrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.searchIcon {
+    position: absolute;
+    left: var(--spacing-lg);
+    width: 20px;
+    height: 20px;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.input {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    padding-left: 48px;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 1rem;
+    border: none;
+    outline: none;
+}
+
+.input::placeholder {
+    color: var(--text-muted);
+}
+
+.submitButton {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: var(--accent-gradient);
+    color: var(--bg-primary);
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all var(--transition-normal);
+}
+
+.submitButton:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+    .searchBar {
+        flex-direction: column;
+        border-radius: var(--radius-lg);
+    }
+
+    .categorySelector {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .categoryButton {
+        width: 100%;
+        justify-content: center;
+        padding: var(--spacing-md);
+    }
+
+    .categoryText {
+        max-width: none;
+    }
+
+    .dropdown {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .large .input {
+        padding: var(--spacing-md) var(--spacing-lg);
+        padding-left: 48px;
+        font-size: 1rem;
+    }
+
+    .submitButton {
+        justify-content: center;
+        padding: var(--spacing-md);
+    }
+
+    .submitButton span {
+        display: inline;
+    }
+}
