@@ -8,7 +8,6 @@
   justify-content: center;
   position: relative;
   padding: 2rem;
-  transition: background-color 0.3s ease;
 }
 
 .main.dark {
@@ -56,44 +55,39 @@
   background: #e5e5e5;
 }
 
-/* Theme Transition Overlay - Circular Reveal */
-.themeOverlay {
+/* Circular Theme Transition */
+.circleOverlay {
   position: fixed;
-  bottom: -50vmax;
-  right: -50vmax;
-  width: 1px;
-  height: 1px;
+  top: 50%;
+  left: 50%;
+  width: 100vmax;
+  height: 100vmax;
+  margin-left: -50vmax;
+  margin-top: -50vmax;
   border-radius: 50%;
-  z-index: 99;
+  z-index: 1;
   pointer-events: none;
   transform: scale(0);
-  transition: none;
+  opacity: 0;
 }
 
-.overlayLight {
-  background: #ffffff;
+.circleOverlay.expand {
+  animation: expandCircle 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-.overlayDark {
-  background: #000000;
-}
-
-.themeOverlay.expanding {
-  animation: circleExpand 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes circleExpand {
+@keyframes expandCircle {
   0% {
     transform: scale(0);
     opacity: 1;
   }
 
-  50% {
+  40% {
+    transform: scale(1.5);
     opacity: 1;
   }
 
   100% {
-    transform: scale(300);
+    transform: scale(1.5);
     opacity: 0;
   }
 }
@@ -173,7 +167,6 @@
   width: 100%;
   height: 3.25rem;
   border-radius: 9999px;
-  transition: all 0.3s ease;
   overflow: hidden;
 }
 

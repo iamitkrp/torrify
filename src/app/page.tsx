@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, ArrowRight, Sun, Moon } from 'lucide-react';
 import styles from './page.module.css';
@@ -9,8 +9,8 @@ export default function Home() {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [isDark, setIsDark] = useState(true);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const [isExpanding, setIsExpanding] = useState(false);
+  const [overlayColor, setOverlayColor] = useState('#ffffff');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,45 +20,40 @@ export default function Home() {
   };
 
   const toggleTheme = () => {
-    if (isAnimating) return;
+    if (isExpanding) return;
 
-    setIsAnimating(true);
+    // Set overlay to the NEW theme color
+    setOverlayColor(isDark ? '#ffffff' : '#000000');
 
-    // Start the animation
-    if (overlayRef.current) {
-      overlayRef.current.classList.add(styles.expanding);
-    }
+    // Start expanding
+    setIsExpanding(true);
 
-    // Switch theme halfway through animation
+    // Switch theme when circle covers screen
     setTimeout(() => {
-      setIsDark(!isDark);
-    }, 400);
+      setIsDark(prev => !prev);
+    }, 600);
 
-    // Remove overlay after animation completes
+    // Stop animation after full duration
     setTimeout(() => {
-      if (overlayRef.current) {
-        overlayRef.current.classList.remove(styles.expanding);
-      }
-      setIsAnimating(false);
-    }, 800);
+      setIsExpanding(false);
+    }, 1800);
   };
 
   return (
     <main className={`${styles.main} ${isDark ? styles.dark : styles.light}`}>
-      {/* Theme transition overlay */}
+      {/* Animated circle overlay */}
       <div
-        ref={overlayRef}
-        className={`${styles.themeOverlay} ${isDark ? styles.overlayLight : styles.overlayDark}`}
+        className={`${styles.circleOverlay} ${isExpanding ? styles.expand : ''}`}
+        style={{ backgroundColor: overlayColor }}
       />
 
-      {/* Theme Toggle */}
+      {/* Theme Toggle Button */}
       <button
         className={styles.themeToggle}
         onClick={toggleTheme}
         aria-label="Toggle theme"
-        disabled={isAnimating}
       >
-        {isDark ? <Sun size={20} /> : <Moon size={20} />}
+        {isDark ? <Sun size={18} /> : <Moon size={18} />}
       </button>
 
       <div className={styles.content}>
