@@ -128,6 +128,8 @@ function SearchContent() {
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
     const [showFilters, setShowFilters] = useState(false);
     const [isDark, setIsDark] = useState(true);
+    const [isExpanding, setIsExpanding] = useState(false);
+    const [overlayColor, setOverlayColor] = useState('#ffffff');
 
     const categories = [
         { id: 'movies', name: 'Movies' },
@@ -171,6 +173,26 @@ function SearchContent() {
         }
     };
 
+    const toggleTheme = () => {
+        if (isExpanding) return;
+
+        // Set overlay to the NEW theme color
+        setOverlayColor(isDark ? '#ffffff' : '#000000');
+
+        // Start expanding
+        setIsExpanding(true);
+
+        // Switch theme when circle covers screen
+        setTimeout(() => {
+            setIsDark(prev => !prev);
+        }, 600);
+
+        // Stop animation after full duration
+        setTimeout(() => {
+            setIsExpanding(false);
+        }, 1800);
+    };
+
     // Sort torrents
     const sortedTorrents = [...torrents].sort((a, b) => {
         switch (sortBy) {
@@ -193,7 +215,13 @@ function SearchContent() {
         : sortedTorrents.filter(t => t.category === category);
 
     return (
-        <div className={styles.page}>
+        <div className={`${styles.page} ${isDark ? styles.dark : styles.light}`}>
+            {/* Animated circle overlay */}
+            <div
+                className={`${styles.circleOverlay} ${isExpanding ? styles.expand : ''}`}
+                style={{ backgroundColor: overlayColor }}
+            />
+
             {/* Minimal Header */}
             <header className={styles.header}>
                 <div className={styles.headerContent}>
@@ -219,7 +247,7 @@ function SearchContent() {
 
                     <button
                         className={styles.themeToggle}
-                        onClick={() => setIsDark(!isDark)}
+                        onClick={toggleTheme}
                         aria-label="Toggle theme"
                     >
                         {isDark ? <Sun size={18} /> : <Moon size={18} />}

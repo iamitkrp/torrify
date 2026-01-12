@@ -2,9 +2,54 @@
 
 .page {
     min-height: 100vh;
-    background: #000000;
     display: flex;
     flex-direction: column;
+    position: relative;
+}
+
+.page.dark {
+    background: #000000;
+}
+
+.page.light {
+    background: #ffffff;
+}
+
+/* Circular Theme Transition */
+.circleOverlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100vmax;
+    height: 100vmax;
+    margin-left: -50vmax;
+    margin-top: -50vmax;
+    border-radius: 50%;
+    z-index: 1;
+    pointer-events: none;
+    transform: scale(0);
+    opacity: 0;
+}
+
+.circleOverlay.expand {
+    animation: expandCircle 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes expandCircle {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+
+    40% {
+        transform: scale(1.5);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
 }
 
 /* ===== HEADER ===== */
@@ -12,9 +57,17 @@
     position: sticky;
     top: 0;
     z-index: 50;
-    background: rgba(0, 0, 0, 0.9);
     backdrop-filter: blur(12px);
+}
+
+.dark .header {
+    background: rgba(0, 0, 0, 0.9);
     border-bottom: 1px solid #1a1a1a;
+}
+
+.light .header {
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid #e5e5e5;
 }
 
 .headerContent {
@@ -78,12 +131,29 @@
     width: 100%;
     padding: 0.5rem 0.875rem;
     padding-left: 2.5rem;
-    background: #0a0a0a;
-    border: 1px solid #262626;
     border-radius: 0.5rem;
-    color: #ffffff;
     font-size: 0.875rem;
     transition: all 0.2s ease;
+}
+
+.dark .searchInput {
+    background: #0a0a0a;
+    border: 1px solid #262626;
+    color: #ffffff;
+}
+
+.dark .searchInput::placeholder {
+    color: #525252;
+}
+
+.light .searchInput {
+    background: #f5f5f5;
+    border: 1px solid #e5e5e5;
+    color: #171717;
+}
+
+.light .searchInput::placeholder {
+    color: #a3a3a3;
 }
 
 .searchInput:focus {
@@ -91,15 +161,8 @@
     outline: none;
 }
 
-.searchInput::placeholder {
-    color: #525252;
-}
-
 .searchButton {
     padding: 0.5rem 1rem;
-    background: #171717;
-    border: 1px solid #262626;
-    color: #ffffff;
     font-size: 0.875rem;
     font-weight: 500;
     border-radius: 0.5rem;
@@ -107,8 +170,25 @@
     white-space: nowrap;
 }
 
-.searchButton:hover {
+.dark .searchButton {
+    background: #171717;
+    border: 1px solid #262626;
+    color: #ffffff;
+}
+
+.dark .searchButton:hover {
     background: #262626;
+    border-color: #3b82f6;
+}
+
+.light .searchButton {
+    background: #f5f5f5;
+    border: 1px solid #e5e5e5;
+    color: #171717;
+}
+
+.light .searchButton:hover {
+    background: #e5e5e5;
     border-color: #3b82f6;
 }
 
@@ -121,16 +201,29 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    background: #171717;
-    color: #fbbf24;
-    border: 1px solid #262626;
     margin-left: auto;
     flex-shrink: 0;
 }
 
-.themeToggle:hover {
+.dark .themeToggle {
+    background: #171717;
+    color: #fbbf24;
+    border: 1px solid #262626;
+}
+
+.dark .themeToggle:hover {
     background: #262626;
     border-color: #3b82f6;
+}
+
+.light .themeToggle {
+    background: #f5f5f5;
+    color: #6366f1;
+    border: 1px solid #e5e5e5;
+}
+
+.light .themeToggle:hover {
+    background: #e5e5e5;
 }
 
 /* ===== MAIN CONTENT ===== */
@@ -153,14 +246,28 @@
     gap: 1.5rem;
     margin-bottom: 1.5rem;
     padding-bottom: 1.5rem;
+}
+
+.dark .resultsHeader {
     border-bottom: 1px solid #1a1a1a;
+}
+
+.light .resultsHeader {
+    border-bottom: 1px solid #e5e5e5;
 }
 
 .resultInfo h1 {
     font-size: 1.25rem;
     font-weight: 700;
     margin-bottom: 0.25rem;
+}
+
+.dark .resultInfo h1 {
     color: #ffffff;
+}
+
+.light .resultInfo h1 {
+    color: #171717;
 }
 
 .queryText {
@@ -184,13 +291,21 @@
     gap: 0.5rem;
     padding: 0.5rem 0.875rem;
     background: transparent;
-    border: 1px solid #262626;
     border-radius: 0.5rem;
-    color: #a3a3a3;
     font-size: 0.875rem;
     font-weight: 500;
     transition: all 0.2s ease;
     cursor: pointer;
+}
+
+.dark .controlBtn {
+    border: 1px solid #262626;
+    color: #a3a3a3;
+}
+
+.light .controlBtn {
+    border: 1px solid #e5e5e5;
+    color: #525252;
 }
 
 .controlBtn:hover,
@@ -354,15 +469,28 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    background: #0a0a0a;
-    border: 1px solid #1a1a1a;
     border-radius: 0.75rem;
     transition: all 0.2s ease;
 }
 
-.torrentCard:hover {
+.dark .torrentCard {
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+}
+
+.dark .torrentCard:hover {
     border-color: #262626;
     background: #0f0f0f;
+}
+
+.light .torrentCard {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+}
+
+.light .torrentCard:hover {
+    border-color: #d4d4d4;
+    background: #f9fafb;
 }
 
 .healthIndicator {
@@ -380,11 +508,18 @@
 .torrentTitle {
     font-size: 0.9375rem;
     font-weight: 500;
-    color: #ffffff;
     margin-bottom: 0.5rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.dark .torrentTitle {
+    color: #ffffff;
+}
+
+.light .torrentTitle {
+    color: #171717;
 }
 
 .torrentMeta {
