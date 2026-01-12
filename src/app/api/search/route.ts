@@ -25,49 +25,62 @@ async function searchPirateBay(query: string, category?: string) {
     return response.json();
 }
 
-// YTS Search
+// YTS Search - try multiple domains
 async function searchYTS(query: string) {
-    const apiUrl = `https://yts.mx/api/v2/list_movies.json?query_term=${encodeURIComponent(query)}&limit=50`;
+    const domains = ['yts.lt', 'yts.mx', 'yts.unblockninja.com'];
 
-    const response = await fetch(apiUrl, {
-        headers: {
-            'Accept': 'application/json',
-            'User-Agent': USER_AGENT,
-        },
-    });
+    for (const domain of domains) {
+        try {
+            const apiUrl = `https://${domain}/api/v2/list_movies.json?query_term=${encodeURIComponent(query)}&limit=50`;
 
-    if (!response.ok) {
-        throw new Error(`YTS API failed: ${response.status}`);
+            const response = await fetch(apiUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'User-Agent': USER_AGENT,
+                },
+            });
+
+            if (response.ok) {
+                return response.json();
+            }
+        } catch {
+            // Try next domain
+            continue;
+        }
     }
 
-    return response.json();
+    throw new Error('All YTS domains failed');
 }
 
-// 1337x Search (scraping approach since no official API)
+// 1337x Search (try multiple public APIs)
 async function search1337x(query: string) {
-    // 1337x doesn't have an official API, so we'll use a public scraper API
-    // or return empty for now
-    try {
-        // Try using a public 1337x API proxy if available
-        const apiUrl = `https://1337x-api.onrender.com/search/${encodeURIComponent(query)}/1`;
+    const apis = [
+        `https://1337x-api.onrender.com/search/${encodeURIComponent(query)}/1`,
+        `https://1337x.unblockninja.com/search/${encodeURIComponent(query)}/1/`,
+    ];
 
-        const response = await fetch(apiUrl, {
-            headers: {
-                'Accept': 'application/json',
-                'User-Agent': USER_AGENT,
-            },
-        });
+    for (const apiUrl of apis) {
+        try {
+            const response = await fetch(apiUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'User-Agent': USER_AGENT,
+                },
+            });
 
-        if (!response.ok) {
-            return [];
+            if (response.ok) {
+                const data = await response.json();
+                const torrents = data.torrents || data || [];
+                if (torrents.length > 0) {
+                    return torrents;
+                }
+            }
+        } catch {
+            continue;
         }
-
-        const data = await response.json();
-        return data.torrents || data || [];
-    } catch {
-        // If 1337x scraper fails, return empty array
-        return [];
     }
+
+    return [];
 }
 
 export async function GET(request: NextRequest) {
