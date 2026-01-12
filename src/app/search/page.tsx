@@ -5,8 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
     Search, SlidersHorizontal, ArrowUpDown, Grid, List,
-    ChevronDown, Loader2, Zap, ArrowUp, ArrowDown,
-    HardDrive, Calendar, Magnet, Copy, Check
+    ChevronDown, Loader2, ArrowUp, ArrowDown,
+    HardDrive, Calendar, Magnet, Copy, Check, Zap
 } from 'lucide-react';
 import { searchTorrents } from '@/lib/piratebay';
 import { Torrent, TorrentCategory, SortOption } from '@/lib/types';
@@ -90,10 +90,7 @@ function MinimalFooter() {
         <footer className={styles.footer}>
             <div className={styles.footerContent}>
                 <div className={styles.footerBrand}>
-                    <div className={styles.footerLogo}>
-                        <Zap className={styles.footerLogoIcon} />
-                        <span className={styles.footerLogoText}>Torrify</span>
-                    </div>
+                    <span className={styles.footerLogoText}>torrify</span>
                     <p className={styles.footerTagline}>
                         The next-generation decentralized torrent search engine.
                     </p>
@@ -200,8 +197,7 @@ function SearchContent() {
             <header className={styles.header}>
                 <div className={styles.headerContent}>
                     <Link href="/" className={styles.logo}>
-                        <Zap className={styles.logoIcon} />
-                        <span className={styles.logoText}>Torrify</span>
+                        <span className={styles.logoText}>torrify</span>
                     </Link>
 
                     <form className={styles.searchForm} onSubmit={handleSearch}>
