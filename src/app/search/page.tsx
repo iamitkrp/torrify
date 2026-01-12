@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
     Search, SlidersHorizontal, ArrowUpDown, Grid, List,
     ChevronDown, Loader2, ArrowUp, ArrowDown,
-    HardDrive, Calendar, Magnet, Copy, Check, Zap
+    HardDrive, Calendar, Magnet, Copy, Check, Sun, Moon
 } from 'lucide-react';
 import { searchTorrents } from '@/lib/piratebay';
 import { Torrent, TorrentCategory, SortOption } from '@/lib/types';
@@ -127,6 +127,7 @@ function SearchContent() {
     const [sortBy, setSortBy] = useState<SortOption>('seeders');
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
     const [showFilters, setShowFilters] = useState(false);
+    const [isDark, setIsDark] = useState(true);
 
     const categories = [
         { id: 'movies', name: 'Movies' },
@@ -216,17 +217,13 @@ function SearchContent() {
                         </button>
                     </form>
 
-                    <nav className={styles.nav}>
-                        {categories.map(cat => (
-                            <Link
-                                key={cat.id}
-                                href={`/search?category=${cat.id}`}
-                                className={`${styles.navLink} ${categoryParam === cat.id ? styles.active : ''}`}
-                            >
-                                {cat.name}
-                            </Link>
-                        ))}
-                    </nav>
+                    <button
+                        className={styles.themeToggle}
+                        onClick={() => setIsDark(!isDark)}
+                        aria-label="Toggle theme"
+                    >
+                        {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                    </button>
                 </div>
             </header>
 

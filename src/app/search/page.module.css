@@ -112,28 +112,25 @@
     border-color: #3b82f6;
 }
 
-.nav {
+.themeToggle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #171717;
+    color: #fbbf24;
+    border: 1px solid #262626;
     margin-left: auto;
+    flex-shrink: 0;
 }
 
-.navLink {
-    color: #a3a3a3;
-    font-size: 0.875rem;
-    font-weight: 500;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
-    transition: all 0.2s ease;
-}
-
-.navLink:hover {
-    color: #ffffff;
-}
-
-.navLink.active {
-    color: #3b82f6;
+.themeToggle:hover {
+    background: #262626;
+    border-color: #3b82f6;
 }
 
 /* ===== MAIN CONTENT ===== */
