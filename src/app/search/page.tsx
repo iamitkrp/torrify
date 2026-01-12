@@ -38,7 +38,10 @@ function TorrentCard({ torrent }: { torrent: Torrent }) {
         <div className={styles.torrentCard}>
             <div className={styles.healthIndicator} style={{ backgroundColor: healthColor }} />
             <div className={styles.torrentContent}>
-                <h3 className={styles.torrentTitle}>{torrent.name}</h3>
+                <div className={styles.torrentHeader}>
+                    <h3 className={styles.torrentTitle}>{torrent.name}</h3>
+                    <span className={styles.sourceBadge}>{torrent.source}</span>
+                </div>
                 <div className={styles.torrentMeta}>
                     <span className={styles.metaItem}>
                         <HardDrive size={14} />
