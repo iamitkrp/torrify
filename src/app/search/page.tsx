@@ -1,76 +1,142 @@
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { useState, useEffect, Suspense, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
-    SlidersHorizontal, ArrowUpDown, Grid, List,
-    ChevronDown, X, Loader2
+    Search, SlidersHorizontal, ArrowUpDown, Grid, List,
+    ChevronDown, Loader2, Zap, ArrowUp, ArrowDown,
+    HardDrive, Calendar, Magnet, Copy, Check
 } from 'lucide-react';
-import Header from '@/components/Header';
-import TorrentCard from '@/components/TorrentCard';
-import TorrentModal from '@/components/TorrentModal';
-import Footer from '@/components/Footer';
-import { mockTorrents, generateMoreTorrents, categories } from '@/lib/mockData';
+import { searchTorrents } from '@/lib/piratebay';
 import { Torrent, TorrentCategory, SortOption } from '@/lib/types';
+import { formatBytes, formatDate, getHealthIndicator, getHealthColor, copyToClipboard } from '@/lib/utils';
+import { stats } from '@/lib/mockData';
 import styles from './page.module.css';
+
+// Minimal Torrent Card component
+function TorrentCard({ torrent }: { torrent: Torrent }) {
+    const [copied, setCopied] = useState(false);
+    const health = getHealthIndicator(torrent.seeders, torrent.leechers);
+    const healthColor = getHealthColor(health);
+
+    const handleCopy = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const success = await copyToClipboard(torrent.magnetLink);
+        if (success) {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
+    const handleMagnet = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        window.location.href = torrent.magnetLink;
+    };
+
+    return (
+        <div className={styles.torrentCard}>
+            <div className={styles.healthIndicator} style={{ backgroundColor: healthColor }} />
+            <div className={styles.torrentContent}>
+                <h3 className={styles.torrentTitle}>{torrent.name}</h3>
+                <div className={styles.torrentMeta}>
+                    <span className={styles.metaItem}>
+                        <HardDrive size={14} />
+                        {formatBytes(torrent.size)}
+                    </span>
+                    <span className={styles.metaItem}>
+                        <Calendar size={14} />
+                        {formatDate(torrent.uploadDate)}
+                    </span>
+                    <span className={`${styles.metaItem} ${styles.seeders}`}>
+                        <ArrowUp size={14} />
+                        {torrent.seeders.toLocaleString()}
+                    </span>
+                    <span className={`${styles.metaItem} ${styles.leechers}`}>
+                        <ArrowDown size={14} />
+                        {torrent.leechers.toLocaleString()}
+                    </span>
+                </div>
+            </div>
+            <div className={styles.torrentActions}>
+                <button
+                    className={`${styles.actionBtn} ${styles.magnetBtn}`}
+                    onClick={handleMagnet}
+                    title="Open magnet link"
+                >
+                    <Magnet size={18} />
+                </button>
+                <button
+                    className={`${styles.actionBtn} ${styles.copyBtn}`}
+                    onClick={handleCopy}
+                    title="Copy magnet link"
+                >
+                    {copied ? <Check size={18} /> : <Copy size={18} />}
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// Minimal Footer
+function MinimalFooter() {
+    const formatNumber = (num: number): string => {
+        if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+        if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
+        return num.toString();
+    };
+
+    return (
+        <footer className={styles.footer}>
+            <div className={styles.footerContent}>
+                <div className={styles.footerBrand}>
+                    <div className={styles.footerLogo}>
+                        <Zap className={styles.footerLogoIcon} />
+                        <span className={styles.footerLogoText}>Torrify</span>
+                    </div>
+                    <p className={styles.footerTagline}>
+                        The next-generation decentralized torrent search engine.
+                    </p>
+                </div>
+                <div className={styles.footerStats}>
+                    <div className={styles.statItem}>
+                        <span className={styles.statValue}>{formatNumber(stats.totalTorrents)}</span>
+                        <span className={styles.statLabel}>Indexed Torrents</span>
+                    </div>
+                    <div className={styles.statItem}>
+                        <span className={styles.statValue}>{formatNumber(stats.activeSeeders)}</span>
+                        <span className={styles.statLabel}>Active Seeders</span>
+                    </div>
+                    <div className={styles.statItem}>
+                        <span className={styles.statValue}>{stats.sources}</span>
+                        <span className={styles.statLabel}>Sources</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    );
+}
 
 function SearchContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const query = searchParams.get('q') || '';
     const categoryParam = searchParams.get('category') as TorrentCategory | null;
-    const sortParam = searchParams.get('sort') as SortOption | null;
 
-    const [selectedTorrent, setSelectedTorrent] = useState<Torrent | null>(null);
+    const [searchQuery, setSearchQuery] = useState(query);
+    const [torrents, setTorrents] = useState<Torrent[]>([]);
+    const [loading, setLoading] = useState(false);
     const [category, setCategory] = useState<TorrentCategory | 'all'>(categoryParam || 'all');
-    const [sortBy, setSortBy] = useState<SortOption>(sortParam || 'seeders');
+    const [sortBy, setSortBy] = useState<SortOption>('seeders');
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
     const [showFilters, setShowFilters] = useState(false);
 
-    // Generate search results
-    const allTorrents = useMemo(() => {
-        return [...mockTorrents, ...generateMoreTorrents(category, 30)];
-    }, [category]);
-
-    // Filter and sort torrents
-    const filteredTorrents = useMemo(() => {
-        let results = allTorrents;
-
-        // Filter by search query
-        if (query) {
-            const lowerQuery = query.toLowerCase();
-            results = results.filter(t =>
-                t.name.toLowerCase().includes(lowerQuery)
-            );
-        }
-
-        // Filter by category
-        if (category !== 'all') {
-            results = results.filter(t => t.category === category);
-        }
-
-        // Sort results
-        switch (sortBy) {
-            case 'seeders':
-                results.sort((a, b) => b.seeders - a.seeders);
-                break;
-            case 'leechers':
-                results.sort((a, b) => b.leechers - a.leechers);
-                break;
-            case 'size':
-                results.sort((a, b) => b.size - a.size);
-                break;
-            case 'date':
-                results.sort((a, b) =>
-                    new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
-                );
-                break;
-            default:
-                // relevance - keep original order for mock
-                break;
-        }
-
-        return results;
-    }, [allTorrents, query, category, sortBy]);
+    const categories = [
+        { id: 'movies', name: 'Movies' },
+        { id: 'tv', name: 'TV' },
+        { id: 'games', name: 'Games' },
+        { id: 'software', name: 'Software' },
+    ];
 
     const sortOptions: { value: SortOption; label: string }[] = [
         { value: 'seeders', label: 'Most Seeders' },
@@ -79,30 +145,106 @@ function SearchContent() {
         { value: 'leechers', label: 'Most Leechers' },
     ];
 
-    return (
-        <>
-            <Header showSearch initialQuery={query} />
+    const fetchTorrents = useCallback(async (q: string, cat: TorrentCategory | 'all') => {
+        if (!q.trim()) return;
 
+        setLoading(true);
+        try {
+            const results = await searchTorrents(q, cat);
+            setTorrents(results);
+        } catch (error) {
+            console.error('Search error:', error);
+            setTorrents([]);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (query) {
+            fetchTorrents(query, category);
+        }
+    }, [query, category, fetchTorrents]);
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        }
+    };
+
+    // Sort torrents
+    const sortedTorrents = [...torrents].sort((a, b) => {
+        switch (sortBy) {
+            case 'seeders':
+                return b.seeders - a.seeders;
+            case 'leechers':
+                return b.leechers - a.leechers;
+            case 'size':
+                return b.size - a.size;
+            case 'date':
+                return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime();
+            default:
+                return 0;
+        }
+    });
+
+    // Filter by category
+    const filteredTorrents = category === 'all'
+        ? sortedTorrents
+        : sortedTorrents.filter(t => t.category === category);
+
+    return (
+        <div className={styles.page}>
+            {/* Minimal Header */}
+            <header className={styles.header}>
+                <div className={styles.headerContent}>
+                    <Link href="/" className={styles.logo}>
+                        <Zap className={styles.logoIcon} />
+                        <span className={styles.logoText}>Torrify</span>
+                    </Link>
+
+                    <form className={styles.searchForm} onSubmit={handleSearch}>
+                        <div className={styles.searchWrapper}>
+                            <Search className={styles.searchIcon} />
+                            <input
+                                type="text"
+                                placeholder="Search torrents..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className={styles.searchInput}
+                            />
+                        </div>
+                        <button type="submit" className={styles.searchButton}>
+                            Search
+                        </button>
+                    </form>
+
+                    <nav className={styles.nav}>
+                        {categories.map(cat => (
+                            <Link
+                                key={cat.id}
+                                href={`/search?category=${cat.id}`}
+                                className={`${styles.navLink} ${categoryParam === cat.id ? styles.active : ''}`}
+                            >
+                                {cat.name}
+                            </Link>
+                        ))}
+                    </nav>
+                </div>
+            </header>
+
+            {/* Main Content */}
             <main className={styles.main}>
                 <div className={styles.container}>
-                    {/* Search Header */}
-                    <div className={styles.searchHeader}>
+                    {/* Results Header */}
+                    <div className={styles.resultsHeader}>
                         <div className={styles.resultInfo}>
-                            {query ? (
-                                <h1>
-                                    Results for <span className={styles.query}>&quot;{query}&quot;</span>
-                                </h1>
-                            ) : category !== 'all' ? (
-                                <h1>
-                                    Browsing <span className={styles.query}>
-                                        {categories.find(c => c.id === category)?.name}
-                                    </span>
-                                </h1>
-                            ) : (
-                                <h1>All Torrents</h1>
-                            )}
+                            <h1>
+                                Results for <span className={styles.queryText}>&quot;{query}&quot;</span>
+                            </h1>
                             <p className={styles.resultCount}>
-                                {filteredTorrents.length.toLocaleString()} results found
+                                {loading ? 'Searching...' : `${filteredTorrents.length} results found`}
                             </p>
                         </div>
 
@@ -169,77 +311,49 @@ function SearchContent() {
                                         <button
                                             key={cat.id}
                                             className={`${styles.categoryBtn} ${category === cat.id ? styles.active : ''}`}
-                                            onClick={() => setCategory(cat.id)}
-                                            style={{ '--cat-color': cat.color } as React.CSSProperties}
+                                            onClick={() => setCategory(cat.id as TorrentCategory)}
                                         >
                                             {cat.name}
                                         </button>
                                     ))}
                                 </div>
                             </div>
-
-                            {(category !== 'all' || query) && (
-                                <button
-                                    className={styles.clearFilters}
-                                    onClick={() => {
-                                        setCategory('all');
-                                    }}
-                                >
-                                    <X size={14} />
-                                    Clear filters
-                                </button>
-                            )}
                         </div>
                     )}
 
                     {/* Results */}
-                    <div className={`${styles.results} ${styles[viewMode]}`}>
-                        {filteredTorrents.length > 0 ? (
-                            filteredTorrents.map(torrent => (
-                                <TorrentCard
-                                    key={torrent.id}
-                                    torrent={torrent}
-                                    onSelect={setSelectedTorrent}
-                                />
-                            ))
-                        ) : (
-                            <div className={styles.noResults}>
-                                <h3>No torrents found</h3>
-                                <p>Try adjusting your search or filters</p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Load More */}
-                    {filteredTorrents.length >= 20 && (
-                        <div className={styles.loadMore}>
-                            <button className={styles.loadMoreBtn}>
-                                Load More Results
-                            </button>
+                    {loading ? (
+                        <div className={styles.loadingState}>
+                            <Loader2 className={styles.spinner} size={32} />
+                            <span>Searching torrents...</span>
+                        </div>
+                    ) : filteredTorrents.length > 0 ? (
+                        <div className={`${styles.results} ${styles[viewMode]}`}>
+                            {filteredTorrents.map(torrent => (
+                                <TorrentCard key={torrent.id} torrent={torrent} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className={styles.noResults}>
+                            <h3>No torrents found</h3>
+                            <p>Try adjusting your search or filters</p>
                         </div>
                     )}
                 </div>
             </main>
 
-            <Footer />
-
-            {/* Modal */}
-            {selectedTorrent && (
-                <TorrentModal
-                    torrent={selectedTorrent}
-                    onClose={() => setSelectedTorrent(null)}
-                />
-            )}
-        </>
+            {/* Minimal Footer */}
+            <MinimalFooter />
+        </div>
     );
 }
 
 export default function SearchPage() {
     return (
         <Suspense fallback={
-            <div className={styles.loading}>
+            <div className={styles.loadingState}>
                 <Loader2 className={styles.spinner} size={32} />
-                <span>Loading results...</span>
+                <span>Loading...</span>
             </div>
         }>
             <SearchContent />
