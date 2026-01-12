@@ -8,7 +8,7 @@ import {
     ChevronDown, Loader2, ArrowUp, ArrowDown,
     HardDrive, Calendar, Magnet, Copy, Check, Sun, Moon
 } from 'lucide-react';
-import { searchTorrents } from '@/lib/piratebay';
+import { searchTorrents } from '@/lib/torrentService';
 import { Torrent, TorrentCategory, SortOption } from '@/lib/types';
 import { formatBytes, formatDate, getHealthIndicator, getHealthColor, copyToClipboard } from '@/lib/utils';
 import { stats } from '@/lib/mockData';
