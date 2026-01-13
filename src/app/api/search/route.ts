@@ -25,61 +25,70 @@ async function searchPirateBay(query: string, category?: string) {
     return response.json();
 }
 
-// YTS Search - try multiple domains
+// YTS Search - try multiple domains with failover
 async function searchYTS(query: string) {
-    const domains = ['yts.lt', 'yts.mx', 'yts.unblockninja.com'];
+    // List of known YTS mirrors
+    // yts.mx is the official one but often blocked
+    // yts.lt and yts.am are common mirrors
+    const domains = [
+        'yts.mx',
+        'yts.lt',
+        'yts.am',
+        'yts.ag'
+    ];
 
     for (const domain of domains) {
         try {
-            const apiUrl = `https://${domain}/api/v2/list_movies.json?query_term=${encodeURIComponent(query)}&limit=50`;
+            console.log(`[YTS] Trying ${domain}...`);
+            // Updated query to match YTS API requirements and ensure sufficient results
+            const apiUrl = `https://${domain}/api/v2/list_movies.json?query_term=${encodeURIComponent(query)}&limit=20`;
+
+            // Add a short timeout to prevent hanging on bad mirrors
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
 
             const response = await fetch(apiUrl, {
                 headers: {
                     'Accept': 'application/json',
                     'User-Agent': USER_AGENT,
                 },
+                signal: controller.signal
             });
 
-            if (response.ok) {
-                return response.json();
-            }
-        } catch {
-            // Try next domain
-            continue;
-        }
-    }
-
-    throw new Error('All YTS domains failed');
-}
-
-// 1337x Search (try multiple public APIs)
-async function search1337x(query: string) {
-    const apis = [
-        `https://1337x-api.onrender.com/search/${encodeURIComponent(query)}/1`,
-        `https://1337x.unblockninja.com/search/${encodeURIComponent(query)}/1/`,
-    ];
-
-    for (const apiUrl of apis) {
-        try {
-            const response = await fetch(apiUrl, {
-                headers: {
-                    'Accept': 'application/json',
-                    'User-Agent': USER_AGENT,
-                },
-            });
+            clearTimeout(timeoutId);
 
             if (response.ok) {
                 const data = await response.json();
-                const torrents = data.torrents || data || [];
-                if (torrents.length > 0) {
-                    return torrents;
+                // Basic validation to ensure we got a valid response structure
+                if (data && data.status === 'ok' && data.data && data.data.movies) {
+                    console.log(`[YTS] Success from ${domain}`);
+                    return data;
+                } else if (data && data.status === 'ok' && data.data && !data.data.movies) {
+                    // Successful request but no movies found (empty result)
+                    console.log(`[YTS] Success from ${domain} (no results)`);
+                    return data;
                 }
+            } else {
+                console.warn(`[YTS] ${domain} returned status ${response.status}`);
             }
-        } catch {
+        } catch (e) {
+            // Ignore errors and try next domain
+            const errorMessage = e instanceof Error ? e.message : String(e);
+            console.warn(`[YTS] Failed to fetch from ${domain}: ${errorMessage}`);
             continue;
         }
     }
 
+    // specific error so frontend knows all attempts failed
+    console.error('[YTS] All domains failed');
+    throw new Error('All YTS domains failed or returned no data');
+}
+
+// 1337x Search
+// Currently disabled/stubbed because most public mirrors and proxies are blocked by Cloudflare/ISPs
+// and require complex scraping or solver services (e.g. FlareSolverr) which are outside current scope.
+async function search1337x(query: string) {
+    console.warn(`1337x search for "${query}" skipped - mirrors unavailable/blocked.`);
     return [];
 }
 

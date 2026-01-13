@@ -127,6 +127,7 @@ function SearchContent() {
     const [torrents, setTorrents] = useState<Torrent[]>([]);
     const [loading, setLoading] = useState(false);
     const [category, setCategory] = useState<TorrentCategory | 'all'>(categoryParam || 'all');
+    const [source, setSource] = useState<string>('all');
     const [sortBy, setSortBy] = useState<SortOption>('seeders');
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
     const [showFilters, setShowFilters] = useState(false);
@@ -139,6 +140,13 @@ function SearchContent() {
         { id: 'tv', name: 'TV' },
         { id: 'games', name: 'Games' },
         { id: 'software', name: 'Software' },
+    ];
+
+    const sources = [
+        { id: 'all', name: 'All Sources' },
+        { id: 'ThePirateBay', name: 'PirateBay' },
+        { id: '1337x', name: '1337x' },
+        { id: 'YTS', name: 'YTS' },
     ];
 
     const sortOptions: { value: SortOption; label: string }[] = [
@@ -212,10 +220,12 @@ function SearchContent() {
         }
     });
 
-    // Filter by category
-    const filteredTorrents = category === 'all'
-        ? sortedTorrents
-        : sortedTorrents.filter(t => t.category === category);
+    // Filter by category and source
+    const filteredTorrents = sortedTorrents.filter(t => {
+        const categoryMatch = category === 'all' || t.category === category;
+        const sourceMatch = source === 'all' || t.source === source;
+        return categoryMatch && sourceMatch;
+    });
 
     return (
         <div className={`${styles.page} ${isDark ? styles.dark : styles.light}`}>
@@ -338,6 +348,21 @@ function SearchContent() {
                                             onClick={() => setCategory(cat.id as TorrentCategory)}
                                         >
                                             {cat.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className={styles.filterGroup}>
+                                <label>Source</label>
+                                <div className={styles.categoryFilters}>
+                                    {sources.map(s => (
+                                        <button
+                                            key={s.id}
+                                            className={`${styles.categoryBtn} ${source === s.id ? styles.active : ''}`}
+                                            onClick={() => setSource(s.id)}
+                                        >
+                                            {s.name}
                                         </button>
                                     ))}
                                 </div>
